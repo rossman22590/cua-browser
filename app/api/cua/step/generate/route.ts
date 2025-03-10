@@ -59,7 +59,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json([result]);
   } catch (error) {
-    console.error("Error in operator endpoint:", error);
+    console.error("Error in cua endpoint:", error);
     return NextResponse.json(
       { success: false, error: "Failed to process request" },
       { status: 500 }

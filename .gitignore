@@ -79,3 +79,6 @@ target/
 *.temp
 .env
 .env.local
+
+# pnpm
+pnpm-lock.yaml

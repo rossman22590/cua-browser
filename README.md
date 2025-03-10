@@ -1,10 +1,10 @@
-# Open Operator
+# CUA Browser
 
 > [!WARNING]
 > This is simply a proof of concept.
 > Browserbase aims not to compete with web agents, but rather to provide all the necessary tools for anybody to build their own web agent. We strongly recommend you check out both [Browserbase](https://www.browserbase.com) and our open source project [Stagehand](https://www.stagehand.dev) to build your own web agent.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fbrowserbase%2Fopen-operator&env=OPENAI_API_KEY,BROWSERBASE_API_KEY,BROWSERBASE_PROJECT_ID&envDescription=API%20keys%20needed%20to%20run%20Open%20Operator&envLink=https%3A%2F%2Fgithub.com%2Fbrowserbase%2Fopen-operator%23environment-variables)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fbrowserbase%2Fcua-browser&env=OPENAI_API_KEY,BROWSERBASE_API_KEY,BROWSERBASE_PROJECT_ID&envDescription=API%20keys%20needed%20to%20run%20CUA%20Browser&envLink=https%3A%2F%2Fgithub.com%2Fbrowserbase%2Fcua-browser%23environment-variables)
 
 ## Getting Started
 
@@ -41,25 +41,8 @@ Then, run the development server:
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see Open Operator in action.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see CUA Browser in action.
 
-## How It Works
-
-Building a web agent is a complex task. You need to understand the user's intent, convert it into headless browser operations, and execute actions, each of which can be incredibly complex on their own.
-
-![public/agent_mess.png](public/agent_mess.png)
-
-Stagehand is a tool that helps you build web agents. It allows you to convert natural language into headless browser operations, execute actions on the browser, and extract results back into structured data.
-
-![public/stagehand_clean.png](public/stagehand_clean.png)
-
-Under the hood, we have a very simple agent loop that just calls Stagehand to convert the user's intent into headless browser operations, and then calls Browserbase to execute those operations.
-
-![public/agent_loop.png](public/agent_loop.png)
-
-Stagehand uses Browserbase to execute actions on the browser, and OpenAI to understand the user's intent.
-
-For more on this, check out the code at [this commit](https://github.com/browserbase/open-operator/blob/6f2fba55b3d271be61819dc11e64b1ada52646ac/index.ts).
 
 ### Key Technologies
 
@@ -81,11 +64,11 @@ Please feel free to open issues and pull requests.
 
 ## License
 
-Open Operator is open source software licensed under the MIT license.
+CUA Browser is open source software licensed under the MIT license.
 
 ## Acknowledgments
 
-This project is inspired by OpenAI's Operator feature and builds upon various open source technologies including Next.js, React, Browserbase, and Stagehand.
+This project is inspired by OpenAI's CUA feature and builds upon various open source technologies including Next.js, React, Browserbase, and Stagehand.
 
 # Browserbase Agent TypeScript Implementation
 
