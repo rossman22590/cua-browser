@@ -1,0 +1,1950 @@
+Responses API + Computer Use — Pilot Guide
+Last updated: Mar 3, 2025
+
+Welcome to the Responses API and Computer Use Pilot!
+The Responses API is a new API primitive in the OpenAI API that supports state and tools. We’ve
+designed Responses to be:
+●​ Flexible: you retain granular control over prompts and context management for every
+request
+●​ Stateful: supports multi-turn interactions and maintains conversation state between
+requests
+●​ Extensible: supports hosted tools like file_search, and tools like computer use or function
+calling
+●​ Fast: the Responses API is as fast and lightweight as the previous chat completions API
+Using the Responses API, you’ll be able to access our latest computer use model and tool. We’re
+really excited to get your feedback!
+Note: this product is still in Alpha. We will be changing the object shape over the course of its
+development, this may include breaking changes to the API that will be made in between now and its
+broader launch.
+
+Currently supported features
+Using images and text as inputs to generate responses
+Generating text responses
+Function calling
+Computer use
+Streaming
+File search
+Structured outputs (for responses api, computer-use model does not support structured
+output)
+●​ Strict functions
+●​ Tool choice
+●​
+●​
+●​
+●​
+●​
+●​
+●​
+
+Changelog
+2025-03-03
+●​ Need to set `truncation=auto` when using computer tool.
+●​ Added support for passing in the `current_url` as part of the `ComputerCallOutput`.
+When given the url, API will perform additional safety checks and flag when the domain
+is considered sensitive (end user attention recommended), or considered irrelevant to
+the task. See more details about the safety checks below.
+●​ Added safety check flagging for the computer tool. When safety issues are detected, the
+safety check details are returned in `pending_safety_check` in `ComputerToolCall`.
+These pending checks need to be explicitly acknowledged in the next request to
+proceed. This is done by adding `acknowledged_safety_checks` in
+`ComputerCallOutput`.
+
+2025-02-18
+We’ve made a few small changes to the API shape which may affect your integration:
+●​ `FunctionCall` and `ComputerCall` items now return a `call_id` in addition to an `id`. You
+should use `call_id` to address the results of your function calls in `function_call_output`.
+●​ `truncation` is now `disabled` by default, instead of `auto`. When using the computer
+tool, it is highly recommended to set this param to `auto`
+●​ `response_format` has moved under a new block, `text`, and renamed to `format` to
+support structured outputs
+●​ `tool_choice` has been added
+
+2025-02-04
+●​ Added a new model `computer-use-preview-2025-02-04`, which addresses some model
+quality issues. `computer-use-alpha` will point to the previous model until Feb 7th, at
+which point it will start pointing to `computer-use-preview-2025-02-04`.
+
+2025-01-13
+●​ `function_output` and `computer_output` are now passed direct to `input`. The
+`tool_output` parameter has been removed.
+●​ Content types have been split between input types and output types. Instead of
+providing `type: text` you will now provide `type: input_text` and `type: input_image`.
+Assistant messages will have content of type `output_text`.
+●​ The `type` of function call output and computer call output has changed to
+`function_call_output` and `computer_call_output` respectively.
+●​ The param to reference a function call or computer call on the output object has
+changed from `id` to `call_id`.
+
+Features not yet supported
+●​ Code Interpreter
+●​ Audio inputs and outputs
+
+Quick start (Python)
+You can quickly experiment with the new Responses API using this simple Python client library,
+which wraps the new API endpoint. Copy “openai_pilot.py” from the Google Drive folder to a
+directory on your computer, and create another Python file to import and use the library.
+
+Generate a text response
+To test that the client library is working correctly, you can generate a text response to a prompt,
+much as you could using the existing chat completions API. The following code assumes it is being
+run in the same folder as “openai_pilot.py”. Be sure to also have your OPENAI_API_KEY system
+environment variable set:
+Python
+from pprint import pprint
+from openai_pilot import OpenAIResponsesPilotClient
+# Client initialized using OPENAI_API_KEY environment variable
+client = OpenAIResponsesPilotClient()
+# Create a generated response
+response = client.beta.responses.create(
+model="gpt-4o-mini",
+input="tell me a joke",
+)
+# Retrieve a previously generated response by ID
+fetched_response = client.beta.responses.retrieve(response["id"])
+pprint(fetched_response)
+
+Use the computer tool
+You can try the computer tool to have the model operate as an agent within your computing
+environment. The model will look at a screenshot of your desktop and issue actions. After every
+command, you perform the action in your computing environment and return a screenshot of the
+new state to the model.
+
+Note: when using the computer tool, you need to set “truncation=auto” explicitly.
+Python
+from openai_pilot import OpenAIResponsesPilotClient
+import base64
+client = OpenAIResponsesPilotClient()
+response = client.beta.responses.create(
+model="computer-use-preview-2025-02-04",
+tools=[
+{
+"type": "computer-preview",
+"display_width": 1024,
+"display_height": 768,
+"environment": "browser"
+}
+],
+input="I'm looking for a new camera. Help me find the best one",
+truncation="auto"
+)
+
+while True:
+done = not any(item["type"] == "computer_call" for item in
+response["output"])
+if done:
+print(response["output"][0])
+break
+# response will have at most one computer call in output
+last_computer_call_id = None
+for output_item in response["output"]:
+if output_item["type"] == "computer_call":
+last_computer_call_id = output_item["call_id"]
+action = output_item["action"]
+match action["type"]:
+case "screenshot":
+pass
+case "click":
+# This line is pseudocode. OpenAI does not currently
+provide a VM
+vm.click(x=action["x"], y=action["y"])
+
+pass
+...
+# This line is pseudocode. OpenAI does not currently provide a VM
+screenshot = vm.get_screenshot()
+screenshot_base64 = base64.b64encode(screenshot_bytes).decode("utf-8")
+response = client.beta.responses.create(
+model="computer-use-preview-2025-02-04",
+previous_response_id=response["id"],
+​
+
+truncation="auto",
+tools=[
+{
+"type": "computer-preview",
+"display_width": 1024,
+"display_height": 768,
+"environment": "browser"
+}
+],
+input=[ # pass the screenshot as input, addressing the tool call
+{
+"call_id": last_computer_call_id,
+"type": "computer_call_output",
+"output": {
+"type": "input_image",
+"image_url": f"data:image/png;base64,{screenshot_base64}"
+}
+}
+]
+)
+
+If the screenshot of the computer is already available with the initial user prompt, they can be sent
+together in the first request. An example request body looks like below. Note, follow up
+screenshots should still be passed in as `computer_call_output` with `call_id` specified.
+Python
+response = client.beta.responses.create(
+model="computer-use-preview-2025-02-04",
+truncation="auto",
+tools=[
+{
+
+"type": "computer-preview",
+"display_width": 1024,
+"display_height": 768,
+"environment": "browser"
+}
+],
+input=[
+{
+"type": "message",
+"role": "user",
+"content": [
+​
+
+{
+"type": "input_text",
+"text": "I'm looking for a new camera. Help me find the
+best one"
+},
+{
+"type": "input_image",
+"image_url": f"data:image/png;base64,{screenshot_base64}"
+}
+]
+}
+
+]
+)
+
+The computer tool makes safety checks and flags issues in the `computer_call` output as
+`pending_safety_checks`. When these safety checks are present, you need to acknowledge them in
+the following request by `acknowledged_safety_checks` to proceed. The acknowledgement
+justification would be from user confirmation or other application specific logic that you need to
+implement.
+For example, below is a response with safety checks:
+JavaScript
+{
+...
+"output": [
+{
+"id": "comp-call-id",
+"type": "computer_call",
+"action": {...},
+
+"pending_safety_checks": [
+{
+"id": "cu_sc_123",
+"code": "malicious_instructions"
+"message": "..."
+},
+...
+]
+}
+]
+}
+
+The next request with acknowledgement should include the ids of the `pending_safety_checks`, or
+you can just pass through the original object.
+JavaScript
+{
+...
+"input": [
+{
+"type": "computer_call_output",
+"call_id": ...,
+"output": {...},
+"acknowledged_safety_checks": [
+{
+"id": "cu_sc_123",
+},
+...
+]
+}
+]
+}
+
+Chaining responses using previous_response_id
+To share context across several generated responses, you can use the “previous_response_id”
+parameter to implement a threaded conversation.
+
+Python
+from pprint import pprint
+from openai_pilot import OpenAIResponsesPilotClient
+client = OpenAIResponsesPilotClient()
+response = client.beta.responses.create(
+model="gpt-4o-mini",
+input="tell me a joke",
+)
+second_response = client.beta.responses.create(
+model="gpt-4o-mini",
+previous_response_id=response["id"],
+input=[{"role": "user", "content": "explain why this is funny."}],
+)
+pprint(second_response)
+
+Chaining responses manually
+To share context across several generated responses, you can use the “previous_response_id”
+parameter to implement a threaded conversation.
+Python
+from pprint import pprint
+from openai_pilot import OpenAIResponsesPilotClient
+client = OpenAIResponsesPilotClient()
+inputs = [{"type": "message", "role": "user", "content": "tell me a joke"}]
+
+response = client.beta.responses.create(
+model="gpt-4o-mini",
+input=inputs
+)
+inputs += response["output"]
+inputs.append({"role": "user", "type": "message", "content": "tell me
+another"})
+
+second_response = client.beta.responses.create(
+model="gpt-4o-mini",
+input=inputs
+)
+pprint(second_response)
+
+Function Calling
+You can use external data sources and other APIs to generate more contextually appropriate
+responses with function calling. Functions are configured as available tools, like in our existing chat
+completions and Assistants API.
+Python
+from pprint import pprint
+from openai_pilot import OpenAIResponsesPilotClient
+client = OpenAIResponsesPilotClient()
+response = client.beta.responses.create(
+model="gpt-4o-mini",
+tools=[
+{
+"type": "function",
+"name": "get_weather",
+"description": "Get the weather for a location",
+"parameters": {
+"type": "object",
+"properties": {
+"location": {"type": "string"},
+},
+"required": ["location"],
+},
+}
+],
+input=[{"role": "user", "content": "What's the weather in San
+Francisco?"}],
+)
+
+# To provide output to tools, add a response for each tool call to an array
+passed
+# to the next response as `input`
+input = []
+for output in response["output"]:
+if output["type"] == "function_call":
+match output["name"]:
+case "get_weather":
+input.append(
+{
+"type": "function_call_output",
+"call_id": output["call_id"],
+"output": '{"temperature": "70 degrees"}',
+}
+)
+case _:
+raise ValueError(f"Unknown function call: {output['name']}")
+response_2 = client.beta.responses.create(
+model="gpt-4o-mini",
+previous_response_id=response["id"],
+input=input
+)
+pprint(response_2)
+
+Function Calling without previous_response_id
+Python
+from pprint import pprint
+from openai_pilot import OpenAIResponsesPilotClient
+client = OpenAIResponsesPilotClient()
+response = client.beta.responses.create(
+model="gpt-4o-mini",
+tools=[
+{
+"type": "function",
+"name": "get_weather",
+
+"description": "Get the weather for a location",
+"parameters": {
+"type": "object",
+"properties": {
+"location": {"type": "string"},
+},
+"required": ["location"],
+},
+}
+],
+input=[{"role": "user", "content": "What's the weather in San
+Francisco?"}],
+)
+# To provide output to tools, add a response for each tool call to an array
+passed
+# to the next response as `input`
+input = response["output"]
+for output in response["output"]:
+if output["type"] == "function_call":
+match output["name"]:
+case "get_weather":
+input.append(
+{
+"type": "function_call_output",
+"call_id": output["call_id"],
+"output": '{"temperature": "70 degrees"}',
+}
+)
+case _:
+raise ValueError(f"Unknown function call: {output['name']}")
+response_2 = client.beta.responses.create(
+model="gpt-4o-mini",
+input=input
+)
+pprint(response_2)
+
+Function Calling with computer tool
+
+Python
+from pprint import pprint
+from openai_pilot import OpenAIResponsesPilotClient
+client = OpenAIResponsesPilotClient()
+response = client.beta.responses.create(
+model="computer-use-preview-2025-02-04",
+truncation="auto",
+tools=[
+{
+"type": "computer-preview",
+"display_width": 1024,
+"display_height": 768,
+"environment": "browser"
+},
+{
+"type": "function",
+"name": "enter_url",
+"description": "Enter url directly into address bar of already opened
+browser",
+"parameters": {
+"type": "object",
+"properties": {
+"url": {"type": "string"},
+},
+"required": ["url"],
+},
+}
+],
+input=[{"role": "user", "content": "Go to openai.com"}],
+)
+# To provide output to tools, add a response for each tool call to an array
+passed
+# to the next response as `input`
+input = response["output"]
+for output in response["output"]:
+if output["type"] == "function_call":
+match output["name"]:
+case "enter_url":
+# insert code to handle enter_url
+input.append(
+{
+"type": "function_call_output",
+
+"call_id": output["call_id"],
+"output": '{...}',
+}
+)
+case _:
+raise ValueError(f"Unknown function call: {output['name']}")
+elif ouptut["type"] == "computer_call":
+last_computer_call_id = output_item["call_id"]
+action = output_item["action"]
+# insert code to handle computer call
+screenshot_base64 = "..."
+input.append(
+{
+"call_id": last_computer_call_id,
+"type": "computer_call_output",
+"output": {
+"type": "input_image",
+"image_url": f"data:image/png;base64,{screenshot_base64}"
+}
+}
+)
+response_2 = client.beta.responses.create(
+model="gpt-4o-mini",
+input=input
+)
+pprint(response_2)
+
+File Search
+You can use your existing Vector Stores that you may have created in the Assistants API with
+the responses API.
+Python
+from openai_pilot import OpenAIResponsesPilotClient
+client = OpenAIResponsesPilotClient()
+vector_store_id = "vs_OhHgdLMuzsZSUGSx0aiogPFt"
+
+response = client.beta.responses.create(
+model="gpt-4o",
+tools=[
+{
+"type": "file_search",
+"vector_store_ids": [vector_store_id],
+}
+],
+input=Search the document for 'population of seattle'.",
+)
+print(response)
+# View the search results the model saw
+response = client.beta.responses.retrieve(
+response["id"],
+include=["output[*].file_search_call.search_results"],
+)
+# You can also control the number of search results the model sees...
+response = client.beta.responses.create(
+model="gpt-4o",
+tools=[
+{
+"type": "file_search",
+"vector_store_ids": [vector_store_id],
+"max_num_results": 2,
+}
+],
+input=[
+{
+"role": "user",
+"text": "Search the document for 'population of seattle'.",
+}
+],
+)
+
+Image Input
+In addition to textual prompts, you can also generate responses using image prompts as in the
+examples below. You can pass in images using a publicly accessible URL, or by Base64 encoding
+image data to send along with your API request.
+
+Image URL
+Python
+from pprint import pprint
+from openai_pilot import OpenAIResponsesPilotClient
+client = OpenAIResponsesPilotClient()
+response = client.beta.responses.create(
+model="gpt-4o-mini",
+input=[
+{
+"role": "user",
+"content": [
+{"type": "input_text", "content": "describe this image"},
+{
+"type": "input_image",
+"image_url":
+"https://images.unsplash.com/photo-1722359429728-49fe13071e6c?q=80&w=2957&auto=
+format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx
+8fA%3D%3D",
+},
+],
+}
+],
+)
+pprint(response)
+
+Base64 Image
+Python
+from openai_pilot import OpenAIResponsesPilotClient
+client = OpenAIResponsesPilotClient()
+image_path = "~/Downloads/braden-jarvis--fvWHvBcMf4-unsplash.jpg"
+
+# Read the image file in binary mode
+with open(image_path, "rb") as image_file:
+image_data = image_file.read()
+# Encode the image data in Base64
+encoded_image = base64.b64encode(image_data)
+encoded_image_str = encoded_image.decode("utf-8")
+response = openai.beta.responses.create(
+model="gpt-4o",
+input=[
+{
+"role": "user",
+"content": [
+{"type": "input_text", "text": "describe this image"},
+{
+"type": "input_image",
+"image_url": f"data:image/jpeg;base64,{encoded_image_str}",
+},
+],
+}
+],
+)
+
+Streaming
+Python
+from openai_pilot import OpenAIResponsesPilotClient
+openai = OpenAIResponsesPilotClient()
+for event in openai.beta.responses.create(
+input="tell me a joke", model="gpt-4o-mini", stream=True
+):
+print(event)
+
+Structured Outputs
+Note: Structured outputs are not supported by the computer-use-preview model.
+Python
+import json
+from openai_pilot import OpenAIResponsesPilotClient
+openai = OpenAIResponsesPilotClient()
+response = openai.beta.responses.create(
+input="tell me a joke",
+model="what's 2 + 2?",
+text={
+"format": {
+"type": "json_schema",
+"name": "math_response",
+"strict": True,
+"schema": {
+"type": "object",
+"properties": {
+"steps": {
+"type": "array",
+"items": {
+"type": "object",
+"properties": {
+"explanation": {"type": "string"},
+"output": {"type": "string"},
+},
+"required": ["explanation", "output"],
+"additionalProperties": False,
+},
+},
+"final_answer": {"type": "string"},
+},
+"additionalProperties": False,
+"required": ["steps", "final_answer"],
+},
+}
+},
+)
+for item in response["output"]:
+
+match item["type"]:
+case "message":
+print(item["content"])
+
+API reference
+Please use the following header on all Responses API calls during this pilot:
+OpenAI-Beta: responses=v1
+
+Example API call
+Unset
+curl -X POST \
+https://api.openai.com/v1/responses \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer $OPENAI_API_KEY" \
+-H "OpenAI-Beta: responses=v1" \
+-d '{
+"model": "gpt-4o-mini",
+"input": "hello world"
+}'
+
+POST /v1/responses
+Input
+JavaScript
+POST /v1/responses {
+model: string;
+input?: string | InputItem[];
+previous_response_id?: string;
+include?: Includable[];
+tools?: Tool[];
+
+metadata?: Record<string, string>;
+tool_choice?:
+| "none"
+| "auto" // default
+| "required"
+| { type: "file_search" }
+| { type: "computer" }
+| { type: "function"; name: string };
+text: {
+​
+
+format?:
+
+​
+
+| { type: "text" } // default
+
+​
+
+| { type: "json_object" }
+
+​
+
+| { type: "json_schema",
+
+​
+
+​
+
+​
+
+schema: object,
+
+​
+
+​
+
+​
+
+name: string;
+
+​
+
+​
+
+​
+
+​
+
+​
+
+strict?: bool // default true
+
+​
+
+​
+
+}
+
+​
+
+}
+
+description?: string,
+
+temperature?: number; // default 1
+top_p?: number; // default 1
+truncation?: "auto" | "disabled";
+parallel_tool_calls?: boolean; // default true
+stream?: boolean; = false;
+reasoning_effort = "low" | "medium" | "high";
+}
+type Includable =
+​
+
+| "output[*].file_search_call.search_results";
+
+type FunctionOutput = {
+​
+
+type: "function_call_output";
+
+​
+
+call_id: string;
+
+​
+
+output: string;
+
+}
+type ComputerCallOutput = {
+​
+
+type: "computer_call_output";
+
+​
+
+call_id: string;
+
+​
+
+output: InputImageContent;
+
+​
+
+acknowledged_safety_checks: SafetyCheck[];
+
+​
+
+current_url?: string;
+
+}
+
+type EasyMessage = {
+​
+
+role: "system" | "user" | "assistant" | "developer"
+
+​
+
+content: string | InputContent[];
+
+}
+type ItemReference = {
+​
+
+type: "item_reference";
+
+​
+
+id: string;
+
+}
+​
+type InputItem =
+​
+
+| EasyMessage
+
+​
+
+| Item
+
+The Response Object
+JavaScript
+type Response = {
+id: string;
+object: "response";
+created_at: number;
+completed_at: number | null;
+error: ResponseError | null;
+model: string;
+tools: Tool[];
+tool_choice:
+| "none"
+| "auto"
+| "required"
+| { type: "file_search" }
+| { type: "code_interpreter" }
+| { type: "function"; name: string };
+text: {
+​
+
+response_format:
+
+​
+
+| { type: "text" } // default
+
+​
+
+| { type: "json_object" }
+
+​
+
+| { type: "json_schema",
+
+​
+
+​
+
+​
+
+schema: object,
+
+​
+
+​
+
+​
+
+​
+
+name: string;
+
+​
+
+​
+
+​
+
+​
+
+description?: string,
+
+​
+
+​
+
+​
+
+​
+
+strict: bool | null
+
+​
+
+​
+
+​
+
+}
+
+};
+previous_response_id: string | null;
+output: Item[];
+metadata: Record<string, string>;
+usage: Usage | null;
+};
+
+type Tool =
+​
+
+| FunctionTool
+
+​
+
+| ComputerTool
+
+type ComputerTool = {
+​
+
+type: "computer-preview";
+
+​
+
+display_width: number;
+
+​
+
+display_height: number;
+
+​
+
+environment: "mac" | "windows" | "linux" | "browser"
+
+}
+type FunctionTool = {
+​
+
+type: "function";
+
+​
+
+name: string;
+
+​
+
+description: string | null;
+
+​
+
+parameters: object;
+
+​
+
+strict: boolean;
+
+}
+type Item =
+​
+
+| Message
+
+​
+
+| FunctionToolCall
+
+​
+
+| ComputerToolCall
+
+​
+// Messages
+type Message = {
+​
+
+id: string; // msg_123
+
+​
+
+type: "message";
+
+​
+
+role: "user" | "assistant" | "developer" | "system"
+
+​
+
+content: Content[];
+
+}
+// Functions
+
+type FunctionToolCall = {
+type: "function_call";
+id: string;
+name: string;
+arguments: string;
+output: Content[] | null;
+};
+// Computer Use
+type ComputerAction =
+​
+
+| Click
+
+​
+
+| DoubleClick
+
+​
+
+| Drag
+
+​
+
+| Screenshot
+
+​
+
+| Keypress
+
+​
+
+| Move
+
+​
+
+| Scroll
+
+​
+
+| Type
+
+​
+
+| Wait
+
+// Computer Use Actions
+type ComputerToolCall = {
+​
+
+type: "computer_call";
+
+​
+
+id: string;
+
+​
+
+call_id: string;
+
+​
+
+action: ComputerAction
+pending_safety_checks: SafetyCheck[]
+
+}
+// Model wants to click at coordinates
+type Click = {
+​
+
+type: "click";
+
+​
+
+button: "left" | "right" | "wheel" | "back" | "forward"
+
+​
+
+x: number;
+
+​
+
+y: number;
+
+}
+// Model wants to double click at coordinates
+type DoubleClick = {
+​
+
+type: "double_click";
+
+​
+
+x: number;
+
+​
+
+y: number;
+
+}
+// Model wants to scroll (scroll_x, scroll_y) with mouse at x, y
+type Scroll = {
+​
+
+type: "scroll";
+
+​
+
+x: number;
+
+​
+
+y: number;
+
+​
+
+scroll_x: number;
+
+​
+
+scroll_y: number;
+
+}
+// Model wants to type in the currently focused input
+type Type = {
+​
+
+type: "type";
+
+​
+
+text: string;
+
+}
+// Model wants to wait 3s before continuing
+type Wait = {
+​
+
+type: "wait";
+
+}
+// model wants to press a key
+type KeyPress = {
+​
+
+type: "keypress"
+
+​
+
+keys: string[];
+
+}
+/*
+Allowed keys:
+keys = [
+"ALT",
+"ARROWDOWN",
+"ARROWLEFT",
+"ARROWRIGHT",
+"ARROWUP",
+"BACKSPACE",
+"CAPSLOCK",
+"CMD",
+"CTRL",
+"DELETE",
+"END",
+"ENTER",
+
+"ESC",
+"HOME",
+"INSERT",
+"OPTION",
+"PAGEDOWN",
+"PAGEUP",
+"SHIFT",
+"SPACE",
+"SUPER",
+"TAB",
+"WIN"
+]
+*/
+// model wants to drag along a defined path
+type Drag = {
+​
+
+type: "drag";
+
+​
+
+path: {
+
+​
+
+​
+
+x: number;
+
+​
+
+​
+
+y: number;
+
+​
+
+}[];
+
+}
+// model wants a screenshot
+type Screenshot = {
+​
+
+type: "screenshot";
+
+}
+// model wants to move the mouse to x, y
+type Move = {
+​
+
+type: "move";
+
+​
+
+x: number;
+
+​
+
+y: number;
+
+}
+type SafetyCheck = {
+id: string;
+code: string;
+message: string;
+}
+/*
+Safety check code:
+- malicious_instructions: The current screen may contain instructions for model
+to perform malicous or unauthorized actions.
+
+- irrelevant_domain: The current_url is a web page that may be unrelated to
+user's initial task.
+- sensitive_domain: The current_url is a web page where actions could have
+significant consequences (e.g. health site, financial site, etc). Model may
+make mistake so it's recommended to take additional precaution.
+*/
+type InputContent =
+​
+
+| InputText
+
+​
+
+| InputAudio
+
+​
+
+| InputImage
+
+​
+
+| InputFile
+
+type OutputContent =
+​
+
+| OutputText
+
+​
+
+| Refusal
+
+​
+
+| OutputAudio
+
+​
+type Content = InputContent | OutputContent
+​
+type InputText = {
+​
+
+type: "input_text";
+
+​
+
+text: string;
+
+}
+type OutputText = {
+​
+
+type: "output_text";
+
+​
+
+text: string;
+
+​
+
+logprobs?: LobProb[] | null;
+
+​
+
+annotations: Citation[];
+
+}
+type Refusal = {
+​
+
+type: "refusal";
+
+​
+
+refusal: string;
+
+}
+type InputImage = {
+​
+
+type: "input_image";
+
+​
+
+image_url?: string;
+
+​
+
+file_id?: string;
+
+​
+
+detail: "high" | "low" | "auto" = "auto";
+
+}
+
+type InputFile = {
+​
+
+type: "input_file";
+
+​
+
+file_id:? string;
+
+​
+​
+
+filename?: string;
+
+​
+
+file_data?: string;
+
+}
+type LogProb = {
+token: string;
+logprob: number;
+bytes: number[];
+top_logprobs?: LogProb[];
+};
+type FileCitation = {
+type: "file_citation";
+index: int;
+file_id: string;
+filename: string;
+};
+type FilePath = {
+type: "file_path";
+file_id: string;
+index: int;
+};
+type Annotation =
+​
+
+| FileCitation
+
+​
+
+| FilePath
+
+Streaming Events
+
+JavaScript
+type StreamingEvent =
+​
+
+| ResponseCreatedEvent
+
+​
+
+| ResponseInProgressEvent
+
+​
+
+| ResponseFailedEvent
+
+​
+
+| ResponseCompletedEvent
+
+​
+
+| ResponseOutputItemAdded
+
+​
+
+| ResponseOutputItemDone
+
+​
+
+| ResponseContentPartAdded
+
+​
+
+| ResponseContentPartDone
+
+​
+
+| ResponseOutputTextDelta
+
+​
+
+| ResponseOutputTextAnnotationAdded
+
+​
+
+| ResponseTextDone
+
+​
+
+| ResponseRefusalDelta
+
+​
+
+| ResponseRefusalDone
+
+​
+
+| ResponseFunctionCallArgumentsDelta
+
+​
+
+| ResponseFunctionCallArgumentsDone
+
+​
+
+| ResponseFileSearchCallInProgress
+
+​
+
+| ResponseFileSearchCallSearching
+
+​
+
+| ResponseFileSearchCallCompleted
+
+​
+
+| ResponseCodeInterpreterInProgress
+
+​
+
+| ResponseCodeInterpreterCallCodeDelta
+
+​
+
+| ResponseCodeInterpreterCallCodeDone
+
+​
+
+| ResponseCodeInterpreterCallIntepreting
+
+​
+
+| ResponseCodeInterpreterCallCompleted
+
+​
+
+| Error
+
+​
+// emitted as soon as the response is created
+type ResponseCreatedEvent = {
+​
+
+type: "response.created";
+
+​
+
+response: Response;
+
+}
+type ResponseInProgressEvent = {
+​
+
+type: "response.in_progress";
+
+​
+
+response: Response;
+
+}
+type ResponseFailedEvent = {
+​
+
+type: "response.failed",
+
+​
+
+resposne: Response;
+
+}
+
+// emitted when the response is done
+type ResponseCompletedEvent = {
+​
+
+type: "response.completed";
+
+​
+
+response: Response;
+
+}
+// Emitted when a new output item is added
+type ResponseOutputItemAdded = {
+​
+
+type: "response.output_item.added";
+
+​
+
+response_id: string;
+
+​
+
+output_index: number;
+
+​
+
+item: Item;
+
+}
+// Emitted when an output item is done
+type ResponseOutputItemDone = {
+​
+
+type: "response.output_item.done"
+
+​
+
+response_id: string;
+
+​
+
+output_index: number;
+
+​
+
+item: Item;
+
+}
+// Emitted when a content part is added
+type ResponseContentPartAdded = {
+​
+
+type: "response.content_part.added";
+
+​
+
+response_id: string;
+
+​
+
+item_id: string;
+
+​
+
+output_index: number;
+
+​
+
+content_index: number;
+
+​
+
+part: Content;
+
+}
+type ResponseContentPartDone = {
+​
+
+type: "response.content_part.done"
+
+​
+
+response_id: string;
+
+​
+
+item_id: string;
+
+​
+
+output_index: number;
+
+​
+
+content_index: number;
+
+​
+
+part: Content;
+
+}
+// Emitted there is additional text content
+type ResponseTextDelta = {
+​
+
+type: "response.output_text.delta";
+
+​
+
+response_id: string;
+
+​
+
+item_id: string;
+
+​
+
+output_index: number;
+
+​
+
+content_index: number;
+
+​
+
+delta: string;
+
+​
+
+logprobs: LobProb | null;
+
+}
+type ResponseTextAnnotationAdded = {
+​
+
+type: "response.output_text.annotation.added";
+
+​
+
+response_id: string;
+
+​
+
+item_id: string;
+
+​
+
+output_index: number;
+
+​
+
+content_index: number;
+
+​
+
+annotation: Annotation;
+
+}
+type ResponseTextDone = {
+​
+
+type: "response.output_text.done";
+
+​
+
+response_id: string;
+
+​
+
+item_id: string;
+
+​
+
+output_index: number;
+
+​
+
+content_index: number;
+
+​
+
+text: string; // The accumulated text
+
+}
+type ResponseRefusalDelta = {
+​
+
+type: "response.refusal.delta";
+
+​
+
+response_id: string;
+
+​
+
+item_id: string;
+
+​
+
+output_index: number;
+
+​
+
+content_index: number;
+
+​
+
+delta: string;
+
+}
+type ResponseRefusalDone = {
+​
+
+type: "response.refusal.done";
+
+​
+
+response_id: string;
+
+​
+
+item_id: string;
+
+​
+
+output_index: number;
+
+​
+
+content_index: number;
+
+​
+
+refusal: string;
+
+}
+
+type ResponseFunctionCallArgumentsDelta = {
+​
+
+type: "response.function_call_arguments.delta"
+
+​
+
+response_id: string;
+
+​
+
+item_id: string;
+
+​
+
+output_index: number;
+
+​
+
+delta: string;
+
+}
+type ResponseFunctionCallArgumentsDone = {
+​
+
+type: "response.function_call_arguments.done";
+
+​
+
+response_id: string;
+
+​
+
+item_id: string;
+
+​
+
+output_index: number;
+
+​
+
+arguments: string;
+
+}
+type ResponseFileSearchCallInProgress = {
+​
+
+type: "response.file_search_call.in_progress";
+
+​
+
+response_id: string;
+
+​
+
+output_index: number;
+
+​
+
+file_search_call: FileSearchToolCall;
+
+}
+type ResponseFileSearchCallSearching = {
+​
+
+type: "response.file_search_call.searching";
+
+​
+
+response_id: string;
+
+​
+
+output_index: number;
+
+​
+
+file_search_call: FileSearchToolCall;
+
+}
+// Issued when file search call is complete (we got results from retrieval)
+type ResponseFileSearchCallCompleted = {
+​
+
+type: "response.file_search_call.completed";
+
+​
+
+response_id: string;
+
+​
+
+file_search_call: FileSearchToolCall;
+
+}
+type ResponseCodeInterpreterCallInProgress = {
+​
+
+type: "response.code_interpreter_call.in_progress";
+
+​
+
+response_id: string;
+
+​
+
+output_index: number;
+
+​
+
+code_interpreter_call: CodeInterpreterCall;
+
+}
+
+type ResponseCodeInterpreterCallCodeDelta = {
+​
+
+type: "response.code_interpreter_call.code.delta";
+
+​
+
+repsonse_id: string;
+
+​
+
+output_index: number;
+
+​
+
+delta: string;
+
+}
+type ResponseCodeInterpreterCallCodeDone = {
+​
+
+type: "response.code_interpreter_call.code.done";
+
+​
+
+response_id: string;
+
+​
+
+output_index: number;
+
+​
+
+code: string;
+
+}
+type ResponseCodeInterpreterCallInterpreting = {
+​
+
+type: "response.code_interpreter_call.interpreting";
+
+​
+
+response_id: string;
+
+​
+
+output_index: number;
+
+​
+
+code_intepreter_call: CodeInterpreterCall;
+
+}
+type ResponseCodeInterpreterCallCompleted = {
+​
+
+type: "response.code_interpreter_call.completed";
+
+​
+
+response_id: string;
+
+​
+
+output_index: number;
+
+​
+
+code_interperter_call: CodeInterpreterCall;
+
+}
+type Error = {
+​
+
+type: "error",
+
+​
+
+code: string | null,
+
+​
+
+message: string,
+
+​
+
+param: string | null
+
+}
+
+GET /v1/responses/:response_id
+Python Example
+fetched_response = openai.beta.responses.retrieve(response["id"])
+
+cURL Example
+Unset
+curl -X GET "https://api.openai.com/v1/responses/resp_a2wSzHwwGcitoAWJdP0UOeEY"
+\
+-H 'openai-beta: responses=v1' \
+-H 'authorization: Bearer $OPENAI_API_KEY'
+
+Returns a Response Object
+
+Known Issues
+Parallel Function Calling
+In some cases, you will encounter a 500 with parallel_tool_calls set to false
+
+Usage
+Usage currently returns 0
+
+
