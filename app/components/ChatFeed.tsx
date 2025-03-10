@@ -4,8 +4,6 @@ import { motion } from "framer-motion";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useWindowSize } from "usehooks-ts";
 import Image from "next/image";
-import { useAtom } from "jotai/react";
-import { contextIdAtom } from "../atoms";
 import posthog from "posthog-js";
 import {
   FunctionOutput,
@@ -71,7 +69,6 @@ export default function LegacyChatFeed({
   const initializationRef = useRef(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [isAgentFinished, setIsAgentFinished] = useState(false);
-  const [contextId, setContextId] = useAtom(contextIdAtom);
   const agentStateRef = useRef<AgentState>({
     sessionId: null,
     sessionUrl: null,
@@ -471,8 +468,7 @@ export default function LegacyChatFeed({
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-              contextId: contextId,
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
             }),
           });
           const sessionData = await sessionResponse.json();
@@ -480,8 +476,6 @@ export default function LegacyChatFeed({
           if (!sessionData.success) {
             throw new Error(sessionData.error || "Failed to create session");
           }
-
-          setContextId(sessionData.contextId);
 
           agentStateRef.current = {
             ...agentStateRef.current,
@@ -522,8 +516,7 @@ export default function LegacyChatFeed({
 
           posthog.capture("operator_start", {
             goal: initialMessage,
-            sessionId: sessionData.sessionId,
-            contextId: sessionData.contextId,
+            sessionId: sessionData.sessionId
           });
 
           if (startData) {

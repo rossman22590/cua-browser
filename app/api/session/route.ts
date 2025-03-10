@@ -77,25 +77,11 @@ function getClosestRegion(timezone?: string): BrowserbaseRegion {
   }
 }
 
-async function createSession(timezone?: string, contextId?: string) {
+async function createSession(timezone?: string) {
   const bb = new Browserbase({
     apiKey: process.env.BROWSERBASE_API_KEY!,
   });
-  const browserSettings: { context?: { id: string; persist: boolean }, viewport?: { width: number; height: number } } = {};
-  if (contextId) {
-    browserSettings.context = {
-      id: contextId,
-      persist: true,
-    };
-  } else {
-    const context = await bb.contexts.create({
-      projectId: process.env.BROWSERBASE_PROJECT_ID!,
-    });
-    browserSettings.context = {
-      id: context.id,
-      persist: true,
-    };
-  }
+  const browserSettings: { viewport?: { width: number; height: number } } = {};
 
   console.log("timezone ", timezone);
   console.log("getClosestRegion(timezone)", getClosestRegion(timezone));
@@ -112,8 +98,7 @@ async function createSession(timezone?: string, contextId?: string) {
     timeout: 900,
   });
   return {
-    session,
-    contextId: browserSettings.context?.id,
+    session
   };
 }
 
@@ -139,10 +124,8 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const timezone = body.timezone as string;
-    const providedContextId = body.contextId as string;
-    const { session, contextId } = await createSession(
-      timezone,
-      providedContextId
+    const { session } = await createSession(
+      timezone
     );
     const browser = await chromium.connectOverCDP(session.connectUrl);
     const defaultContext = browser.contexts()[0];
@@ -153,8 +136,7 @@ export async function POST(request: Request) {
       success: true,
       sessionId: session.id,
       sessionUrl: liveUrl,
-      connectUrl: session.connectUrl,
-      contextId,
+      connectUrl: session.connectUrl
     });
   } catch (error) {
     console.error("Error creating session:", error);
