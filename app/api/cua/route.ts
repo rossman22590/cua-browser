@@ -124,7 +124,7 @@ export async function POST() {
     }*/
     return NextResponse.json({ error: "Invalid action type" }, { status: 400 });
   } catch (error) {
-    console.error("Error in operator endpoint:", error);
+    console.error("Error in cua endpoint:", error);
     return NextResponse.json(
       { success: false, error: "Failed to process request" },
       { status: 500 }

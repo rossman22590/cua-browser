@@ -89,7 +89,7 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2">
               <a
-                href="https://github.com/browserbase/open-operator"
+                href="https://github.com/browserbase/cua-browser"
                 target="_blank" 
                 rel="noopener noreferrer"
               >

@@ -9,7 +9,7 @@ import {
   FunctionOutput,
   Item,
   ComputerCallOutput,
-} from "../api/operator/agent/types";
+} from "../api/cua/agent/types";
 
 interface ChatFeedProps {
   initialMessage?: string;
@@ -317,7 +317,7 @@ export default function LegacyChatFeed({
       }));
 
       // Handle computer call
-      const computerCallResponse = await fetch("/api/operator/step/execute", {
+      const computerCallResponse = await fetch("/api/cua/step/execute", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -334,7 +334,7 @@ export default function LegacyChatFeed({
         | ComputerCallOutput
       )[] = await computerCallResponse.json();
 
-      const nextStepResponse = await fetch("/api/operator/step/generate", {
+      const nextStepResponse = await fetch("/api/cua/step/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -389,7 +389,7 @@ export default function LegacyChatFeed({
 
     try {
       // Continue the conversation
-      const nextStepResponse = await fetch("/api/operator/step/generate", {
+      const nextStepResponse = await fetch("/api/cua/step/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -497,8 +497,8 @@ export default function LegacyChatFeed({
             steps: [],
           });
 
-          // Start the operator session
-          const startResponse = await fetch("/api/operator/start", {
+          // Start the cua session
+          const startResponse = await fetch("/api/cua/start", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -514,7 +514,7 @@ export default function LegacyChatFeed({
             responseId: string;
           }[] = await startResponse.json();
 
-          posthog.capture("operator_start", {
+          posthog.capture("cua_start", {
             goal: initialMessage,
             sessionId: sessionData.sessionId
           });
