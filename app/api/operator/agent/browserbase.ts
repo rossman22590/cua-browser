@@ -148,6 +148,8 @@ export class BrowserbaseBrowser extends BasePlaywrightComputer {
         cursor.style.top = `${e.clientY}px`;
         cursor.style.left = `${e.clientX}px`;
       });
+    }).catch((error) => {
+      console.error("Error injecting cursor-rendering script:", error);
     });
 
     // Only navigate to Google if it's a new session
