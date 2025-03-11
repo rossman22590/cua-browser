@@ -32,10 +32,6 @@ export async function POST(request: Request) {
           "content": "You are a helpful assistant that can use a web browser to accomplish tasks. Your starting point is the Google search page. If you see nothing, trying going to Google."
         },
         {
-          "role": "assistant",
-          "content": "What would you like to do today?"
-        },
-        {
           "role": "user",
           "content": urlMatch ? "What page are we on? Can you take a screenshot to confirm?" : userInput
         }
@@ -71,6 +67,9 @@ export async function POST(request: Request) {
         } while (!done);
 
         stepResult = await agent.getAction([{
+          "role": "user",
+          "content": "Let's continue."
+        },{
           "role": "user",
           "content": userInput
         }], stepResult.responseId);

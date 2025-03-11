@@ -170,7 +170,7 @@ export abstract class BasePlaywrightComputer {
   // --- Extra browser-oriented actions ---
   async goto(url: string): Promise<void> {
     if (!this._page) throw new Error("Page not initialized");
-    await this._page.goto(url);
+    await this._page.goto(url, { waitUntil: "domcontentloaded" });
   }
   
   async back(): Promise<void> {
