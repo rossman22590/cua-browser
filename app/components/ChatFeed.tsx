@@ -1322,11 +1322,6 @@ export default function LegacyChatFeed({
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          {(() => {
-            console.log("Session URL:", uiState.sessionUrl);
-            return null;
-          })()}
-
           <div className="flex flex-col md:flex-row h-full overflow-hidden">
             <div className="w-full md:flex-[2] p-4 md:p-6 md:border-l border-[#CAC8C7] order-first md:order-last flex flex-col items-center justify-center sticky top-0 z-20 bg-white">
               <BrowserSessionContainer
