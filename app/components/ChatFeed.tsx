@@ -14,6 +14,7 @@ import {
 } from "../api/cua/agent/types";
 import { SlidingNumber } from "../components/ui/sliding-number";
 import { Pin } from "lucide-react";
+import { SessionControls } from "./SessionControls";
 
 interface ChatFeedProps {
   initialMessage?: string;
@@ -54,43 +55,7 @@ interface AgentState {
   isLoading: boolean;
 }
 
-const pulseInputKeyframes = `
-@keyframes pulseInput {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 59, 0, 0.4);
-    border-color: rgba(255, 59, 0, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 10px 2px rgba(255, 59, 0, 0.3);
-    border-color: rgba(255, 59, 0, 0.8);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 59, 0, 0);
-    border-color: rgba(255, 59, 0, 0.4);
-  }
-}
-
-@keyframes glowingBorder {
-  0% {
-    border-color: rgba(245, 240, 255, 0.6);
-    box-shadow: 0 0 5px rgba(245, 240, 255, 0.3);
-  }
-  50% {
-    border-color: rgba(255, 59, 0, 0.8);
-    box-shadow: 0 0 10px rgba(255, 59, 0, 0.5);
-  }
-  100% {
-    border-color: rgba(245, 240, 255, 0.6);
-    box-shadow: 0 0 5px rgba(245, 240, 255, 0.3);
-  }
-}`;
-
-const formatTime = (seconds: number): string => {
-  // Always show minutes:seconds format
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-};
+// formatTime moved to SessionControls component
 
 // Generate detailed reasoning for actions based on context and action type
 const generateDetailedReasoning = (
@@ -244,6 +209,23 @@ export default function LegacyChatFeed({
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Auto-focus input field when waiting for input
+  useEffect(() => {
+    if (isWaitingForInput && inputRef.current) {
+      // Try multiple times with increasing delays to ensure focus works
+      const focusAttempts = [10, 100, 300, 500];
+      
+      focusAttempts.forEach((delay) => {
+        setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.focus();
+            console.log(`Attempting to focus input at ${delay}ms`);
+          }
+        }, delay);
+      });
+    }
+  }, [isWaitingForInput]);
 
   // Track scroll position to apply conditional margin
   useEffect(() => {
@@ -1080,10 +1062,13 @@ export default function LegacyChatFeed({
       exit="exit"
     >
       <motion.nav
-        className="flex justify-between items-center px-4 pt-4 sm:px-8 sm:py-4 bg-white sm:border-b border-[#CAC8C7] shadow-sm"
+        className="flex justify-between items-center px-4 pt-4 sm:px-8 sm:py-4 bg-white sm:border-b border-[#CAC8C7] shadow-sm relative z-10"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
+        style={{
+          backgroundColor: "#ffffff",
+        }}
       >
         <div className="flex items-center gap-2">
           <Image
@@ -1170,26 +1155,11 @@ export default function LegacyChatFeed({
                       </div>
                     )}
                   </div>
-                  <div className="mt-3 flex justify-center items-center space-x-1 text-sm text-[#2E191E] ">
-                    <div className="flex flex-row items-center gap-1 bg-[#F6F5F5] px-2 py-1 border border-[#CAC8C7]">
-                    <svg
-                      className="w-4 h-4"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <polyline points="12 6 12 12 16 14" />
-                    </svg>
-                    <div className="flex items-center px-1 py-1 text-sm text-[#2E191E]">
-                      <span className="font-medium">Session time:</span>{" "}
-                      <span className="ml-1">{formatTime(sessionTime)}</span>
-                    </div>
-                  </div>
+                  <div className="mt-4 flex justify-center items-center space-x-1 text-sm text-[#2E191E] ">
+                    <SessionControls
+                      sessionTime={sessionTime}
+                      onStop={() => setIsAgentFinished(true)}
+                    />
                   </div>
                 </motion.div>
               </div>
@@ -1214,7 +1184,7 @@ export default function LegacyChatFeed({
             )}
 
             <div
-              className="w-full md:w-[450px] p-4 md:p-6 min-w-0 flex flex-col flex-1 overflow-hidden"
+              className="w-full md:w-[450px] px-4 pb-4 md:p-6 min-w-0 flex flex-col flex-1 overflow-hidden"
               style={{
                 height: isMobile
                   ? "calc(100vh - 300px)"
@@ -1531,6 +1501,13 @@ export default function LegacyChatFeed({
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  onAnimationComplete={() => {
+                    // Focus input when animation completes
+                    if (inputRef.current) {
+                      inputRef.current.focus();
+                      console.log('Animation complete, focusing input');
+                    }
+                  }}
                   onSubmit={async (e) => {
                     e.preventDefault();
                     if (
@@ -1549,11 +1526,12 @@ export default function LegacyChatFeed({
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                     placeholder="Type your message..."
-                    className="flex-1 px-2 sm:px-4 py-2 border focus:outline-none focus:ring-1 focus:ring-[#FF3B00] focus:border-transparent font-ppsupply animate-[glowingBorder_3s_ease-in-out_infinite] transition-all text-sm sm:text-base"
+                    className="flex-1 px-2 sm:px-4 py-2 border focus:outline-none focus:ring-1 focus:ring-[#FF3B00] focus:border-transparent font-ppsupply transition-all text-sm sm:text-base"
                     style={{
                       // backgroundColor: "rgba(245, 240, 255, 0.75)",
                       backdropFilter: "blur(8px)",
                       borderColor: "rgba(255, 59, 0, 0.5)",
+                      borderWidth: "2px",
                     }}
                   />
                   <button
@@ -1569,9 +1547,6 @@ export default function LegacyChatFeed({
           </div>
         </motion.div>
       </main>
-      <style jsx global>{`
-        ${pulseInputKeyframes}
-      `}</style>
     </motion.div>
   );
 }
