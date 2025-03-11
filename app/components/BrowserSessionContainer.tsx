@@ -253,8 +253,11 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
                       &quot;{initialMessage}&quot;
                     </motion.span>
 
-                    <motion.button
-                      className="px-4 md:px-6 py-2 md:py-3 text-white text-base md:text-lg font-medium mt-4 md:mt-8"
+                    <motion.a
+                      href="https://www.browserbase.com/sign-up"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 md:px-6 py-2 md:py-3 text-white text-base md:text-lg font-medium mt-4 md:mt-8 inline-block text-center"
                       style={{
                         background: "#F14A1C",
                         backdropFilter: "blur(12px)",
@@ -268,10 +271,9 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
                         background: "#F14A1C",
                       }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => window.location.reload()}
                     >
                       Want to try Browserbase?
-                    </motion.button>
+                    </motion.a>
                   </motion.div>
                 </motion.div>
               )}
