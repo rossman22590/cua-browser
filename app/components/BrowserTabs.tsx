@@ -101,9 +101,10 @@ export default function BrowserTabs({
           key={page.id}
           onClick={() => setActivePage(page)}
           className={cn(
-            "bg-[rgb(248,248,255)] rounded-[2px] text-gray-500 border border-[rgb(230,225,240)] text-sm flex gap-x-1 py-1 px-1.5 max-w-[300px] cursor-pointer hover:border-gray-400",
+            "bg-[rgb(248,248,255)] rounded-[2px] text-gray-500 border border-[rgb(245,235,255)] text-sm flex gap-x-1 py-1 px-1.5 max-w-[300px] cursor-pointer hover:border-gray-400",
             {
-              "bg-[rgb(245,240,255)] text-gray-800": page.id === activePage?.id,
+              "bg-[rgb(245,240,255)] text-gray-800 border-[rgb(179,170,170)]":
+                page.id === activePage?.id,
             }
           )}
         >
