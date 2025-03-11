@@ -267,17 +267,38 @@ export default function LegacyChatFeed({
       uiState.steps[uiState.steps.length - 1].tool === "CLOSE"
     ) {
       setIsAgentFinished(true);
-      fetch("/api/session", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          sessionId: uiState.sessionId,
-        }),
-      });
     }
   }, [uiState.sessionId, uiState.steps]);
+
+  // Watch for isAgentFinished state changes to terminate the session when stop button is clicked
+  useEffect(() => {
+    if (isAgentFinished && uiState.sessionId) {
+      console.log("Terminating session due to agent finished state:", uiState.sessionId);
+      
+      // Set a flag to prevent further API calls
+      const abortController = new AbortController();
+      const signal = abortController.signal;
+      
+      // Cancel any pending requests
+      abortController.abort();
+      
+      // Wait a short delay to allow any in-progress operations to complete
+      setTimeout(() => {
+        fetch("/api/session", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sessionId: uiState.sessionId,
+          }),
+        }).catch(error => {
+          // Ignore errors during session termination
+          console.log("Error during session termination (can be ignored):", error);
+        });
+      }, 500);
+    }
+  }, [isAgentFinished, uiState.sessionId]);
 
   useEffect(() => {
     scrollToBottom();
