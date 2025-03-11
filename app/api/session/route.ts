@@ -81,14 +81,16 @@ async function createSession(timezone?: string) {
   const bb = new Browserbase({
     apiKey: process.env.BROWSERBASE_API_KEY!,
   });
-  const browserSettings: { viewport?: { width: number; height: number } } = {};
 
   console.log("timezone ", timezone);
   console.log("getClosestRegion(timezone)", getClosestRegion(timezone));
 
-  browserSettings.viewport = {
-    width: 1024,
-    height: 768,
+  const browserSettings = {
+    viewport: {
+      width: 1024,
+      height: 768,
+    },
+    blockAds: true,
   };
   const session = await bb.sessions.create({
     projectId: process.env.BROWSERBASE_PROJECT_ID!,
