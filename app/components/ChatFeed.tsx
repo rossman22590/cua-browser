@@ -15,6 +15,7 @@ import {
 import { SlidingNumber } from "../components/ui/sliding-number";
 import { Pin } from "lucide-react";
 import { SessionControls } from "./SessionControls";
+import BrowserSessionContainer from "./BrowserSessionContainer";
 
 interface ChatFeedProps {
   initialMessage?: string;
@@ -824,13 +825,13 @@ export default function LegacyChatFeed({
           body: JSON.stringify({
             sessionId,
             input: computerCallData,
-            responseId: stepData[0].responseId,
+            responseId: stepData[0]?.responseId || null,
           }),
         });
 
         const nextStepData = await nextStepResponse.json();
         currentResponseRef.current = {
-          id: nextStepData[0].responseId,
+          id: nextStepData[0]?.responseId || null,
         };
 
         // Process the next step recursively
@@ -1122,68 +1123,23 @@ export default function LegacyChatFeed({
           })()}
 
           <div className="flex flex-col md:flex-row h-full overflow-hidden">
-            {!isAgentFinished && (
-              <div className="w-full md:flex-[2] p-4 md:p-6 md:border-l border-[#CAC8C7] order-first md:order-last flex items-center justify-center sticky top-0 z-20 bg-white">
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className="w-full h-full max-w-[1000px] mx-auto flex flex-col md:justify-center"
-                  style={{ minHeight: "auto" }}
-                >
-                  <div className="w-full h-[250px] md:h-[600px] flex items-center justify-center overflow-hidden border border-[#CAC8C7] shadow-sm bg-white">
-                    {uiState.sessionUrl ? (
-                      <iframe
-                        src={uiState.sessionUrl}
-                        className="w-full h-full"
-                        sandbox="allow-same-origin allow-scripts allow-forms"
-                        allow="clipboard-read; clipboard-write"
-                        loading="lazy"
-                        referrerPolicy="no-referrer"
-                        title="Browser Session"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50">
-                        <div className="animate-pulse flex flex-col items-center space-y-4 w-full">
-                          <div className="h-6 bg-gray-200 rounded w-3/4 max-w-md"></div>
-                          <div className="h-4 bg-gray-200 rounded w-1/2 max-w-sm"></div>
-                          <div className="mt-6 flex justify-center">
-                            <div className="rounded-full bg-gray-200 h-16 w-16"></div>
-                          </div>
-                          <div className="h-4 bg-gray-200 rounded w-1/3 max-w-xs"></div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-4 flex justify-center items-center space-x-1 text-sm text-[#2E191E] ">
-                    <SessionControls
-                      sessionTime={sessionTime}
-                      onStop={() => setIsAgentFinished(true)}
-                    />
-                  </div>
-                </motion.div>
-              </div>
-            )}
-            {isAgentFinished && (
-              <div className="w-full md:flex-[2] p-4 md:p-6 border-b md:border-b-0 md:border-l border-[#CAC8C7] order-first md:order-last flex items-center justify-center">
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className="w-full h-full max-w-[1000px] mx-auto flex flex-col md:justify-center"
-                  style={{ minHeight: "auto" }}
-                >
-                  <div className="w-full h-[250px] md:h-[600px] flex items-center justify-center overflow-hidden border border-[#CAC8C7] shadow-sm bg-white">
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50">
-                      <div className="flex flex-col items-center space-y-4 w-full">
-                        <span className="text-lg font-medium text-gray-500">The agent has completed the task</span>
-                        <span className="text-base italic text-gray-500">&quot;{initialMessage}&quot;</span>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-            )}
+            <div className="w-full md:flex-[2] p-4 md:p-6 md:border-l border-[#CAC8C7] order-first md:order-last flex flex-col items-center justify-center sticky top-0 z-20 bg-white">
+              <BrowserSessionContainer
+                sessionUrl={uiState.sessionUrl}
+                isVisible={true}
+                isCompleted={isAgentFinished}
+                initialMessage={initialMessage}
+              />
+              
+              {!isAgentFinished && (
+                <div className="mt-4 flex justify-center items-center space-x-1 text-sm text-[#2E191E]">
+                  <SessionControls
+                    sessionTime={sessionTime}
+                    onStop={() => setIsAgentFinished(true)}
+                  />
+                </div>
+              )}
+            </div>
 
             <div
               className="w-full md:w-[450px] px-4 pb-4 md:p-6 min-w-0 flex flex-col flex-1 overflow-hidden"
