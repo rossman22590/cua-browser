@@ -1399,6 +1399,7 @@ export default function LegacyChatFeed({
                 initialMessage={initialMessage}
                 sessionTime={sessionTime}
                 onStop={() => setIsAgentFinished(true)}
+                onRestart={onClose}
               />
 
               {!isAgentFinished && (

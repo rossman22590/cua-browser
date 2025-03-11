@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SessionControls } from "./SessionControls";
+import { RotateCcwIcon } from "lucide-react";
 
 interface BrowserSessionContainerProps {
   sessionUrl: string | null;
@@ -11,6 +12,7 @@ interface BrowserSessionContainerProps {
   initialMessage: string | undefined;
   sessionTime?: number;
   onStop?: () => void;
+  onRestart?: () => void;
 }
 
 const containerVariants = {
@@ -103,6 +105,7 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
   initialMessage,
   sessionTime = 0,
   onStop = () => {},
+  onRestart = () => {},
 }) => {
   // Track the animation state of curtains
   const [curtainState, setCurtainState] = useState<
@@ -275,6 +278,14 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
                     >
                       Want to try Browserbase?
                     </motion.a>
+                    <motion.button
+                      type="button"
+                      onClick={onRestart}
+                      className="flex gap-x-2 text-white px-2 py-1 items-center"
+                    >
+                      <RotateCcwIcon className="size-4" />
+                      Restart
+                    </motion.button>
                   </motion.div>
                 </motion.div>
               )}
