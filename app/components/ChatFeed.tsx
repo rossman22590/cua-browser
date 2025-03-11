@@ -243,8 +243,8 @@ export default function LegacyChatFeed({
 
     const container = chatContainerRef.current;
     if (container) {
-      container.addEventListener('scroll', handleScroll);
-      return () => container.removeEventListener('scroll', handleScroll);
+      container.addEventListener("scroll", handleScroll);
+      return () => container.removeEventListener("scroll", handleScroll);
     }
   }, []);
 
@@ -1097,10 +1097,24 @@ export default function LegacyChatFeed({
           )}
         </motion.button>
       </motion.nav>
-      <main className="flex-1 flex flex-col items-center p-2 sm:p-4 md:p-6 relative overflow-hidden" style={{ backgroundColor: '#FCFCFC' }}>
-        <div className="absolute inset-0 z-0" style={{ backgroundImage: 'url(/grid.svg)', backgroundSize: '25%', backgroundPosition: 'center', backgroundRepeat: 'repeat', opacity: 0.8 }}></div>
+      <main
+        className="flex-1 flex flex-col items-center sm:p-4 md:p-6 relative overflow-hidden"
+        style={{ backgroundColor: "#FCFCFC" }}
+      >
+        <div
+          className="absolute inset-0 z-0 overflow-hidden pointer-events-none"
+          style={{
+            backgroundImage: "url(/grid.svg)",
+            backgroundSize: "25%",
+            backgroundPosition: "center",
+            backgroundRepeat: "repeat",
+            opacity: 0.8,
+            position: "fixed",
+          }}
+        ></div>
         <motion.div
-          className="w-full max-w-[1600px] bg-white border border-[#CAC8C7] shadow-sm overflow-hidden mx-auto relative z-10" style={{ height: isMobile ? 'calc(100vh - 80px)' : 'auto' }}
+          className="w-full max-w-[1600px] bg-white md:border border-[#CAC8C7] shadow-sm overflow-hidden mx-auto relative z-10"
+          style={{ height: isMobile ? "calc(100vh - 80px)" : "auto" }}
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
@@ -1111,25 +1125,38 @@ export default function LegacyChatFeed({
           })()}
 
           <div className="flex flex-col md:flex-row h-full overflow-hidden">
-            {uiState.sessionUrl && !isAgentFinished && (
-              <div className="w-full md:flex-[2] p-4 md:p-6 border-b md:border-b-0 md:border-l border-[#CAC8C7] order-first md:order-last flex items-center justify-center sticky top-0 z-20 bg-white">
+            {!isAgentFinished && (
+              <div className="w-full md:flex-[2] p-4 md:p-6 md:border-l border-[#CAC8C7] order-first md:order-last flex items-center justify-center sticky top-0 z-20 bg-white">
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.4 }}
                   className="w-full h-full max-w-[1000px] mx-auto flex flex-col md:justify-center"
-                  style={{ minHeight: 'auto' }}
+                  style={{ minHeight: "auto" }}
                 >
                   <div className="w-full h-[250px] md:h-[600px] flex items-center justify-center overflow-hidden border border-[#CAC8C7] shadow-sm bg-white">
-                    <iframe
-                      src={uiState.sessionUrl}
-                      className="w-full h-full"
-                      sandbox="allow-same-origin allow-scripts allow-forms"
-                      allow="clipboard-read; clipboard-write"
-                      loading="lazy"
-                      referrerPolicy="no-referrer"
-                      title="Browser Session"
-                    />
+                    {uiState.sessionUrl ? (
+                      <iframe
+                        src={uiState.sessionUrl}
+                        className="w-full h-full"
+                        sandbox="allow-same-origin allow-scripts allow-forms"
+                        allow="clipboard-read; clipboard-write"
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                        title="Browser Session"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50">
+                        <div className="animate-pulse flex flex-col items-center space-y-4 w-full">
+                          <div className="h-6 bg-gray-200 rounded w-3/4 max-w-md"></div>
+                          <div className="h-4 bg-gray-200 rounded w-1/2 max-w-sm"></div>
+                          <div className="mt-6 flex justify-center">
+                            <div className="rounded-full bg-gray-200 h-16 w-16"></div>
+                          </div>
+                          <div className="h-4 bg-gray-200 rounded w-1/3 max-w-xs"></div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="mt-3 flex justify-center items-center space-x-2 text-sm text-gray-500">
                     <svg
@@ -1172,32 +1199,70 @@ export default function LegacyChatFeed({
               </div>
             )}
 
-            <div className="w-full md:w-[450px] p-4 md:p-6 min-w-0 h-[calc(100vh-300px)] md:h-[calc(100vh-12rem)] flex flex-col flex-1 overflow-hidden">
+            <div
+              className="w-full md:w-[450px] p-4 md:p-6 min-w-0 flex flex-col flex-1 overflow-hidden"
+              style={{
+                height: isMobile
+                  ? "calc(100vh - 300px)"
+                  : "calc(100vh - 12rem)",
+                position: "relative",
+              }}
+            >
               {/* Pinned Goal Message */}
               {initialMessage && (
-                <motion.div
-                  variants={messageVariants}
-                  className={`p-4 bg-purple-50 border border-[#CAC8C7] font-ppsupply sticky top-0 z-10 ${!isScrolled ? 'mb-4' : ''}`}
-                  style={{ boxShadow: '0 8px 15px -3px rgba(0, 0, 0, 0.2)' }}
-                >
-                  <div className="absolute left-0 right-0 -bottom-4 h-6 mx-auto bg-gray-100/70 blur-3xl rounded-full"></div>
-                  <div className="absolute top-2 right-2">
-                    <Pin color="#2E191E" size={17} strokeWidth={2} style={{ transform: 'rotate(30deg)' }} />
-                  </div>
-                  <p className="font-semibold pr-6">Goal:</p>
-             
-                  <p>{initialMessage}</p>
-               
-                </motion.div>
+                <div className="bg-white relative">
+                  <motion.div
+                    variants={messageVariants}
+                    className={`p-4 font-ppsupply sticky top-0 z-10 w-full ${
+                      !isScrolled ? "mb-4" : ""
+                    }`}
+                    style={{
+                      backgroundColor: "rgba(245, 240, 255, 0.85)",
+                      backdropFilter: "blur(8px)",
+                      border: "1px solid #CAC8C7",
+                      width: "100%",
+                      maxWidth: "100%",
+                      marginLeft: 0,
+                      marginRight: 0,
+                    }}
+                  >
+                    <div
+                      className="absolute left-0 right-0 -bottom-24 w-full h-24 pointer-events-none"
+                      style={{
+                        background:
+                          "linear-gradient(to bottom, rgba(245, 240, 255, 0.85), rgba(245, 240, 255, 0))",
+                        zIndex: 0,
+                        opacity: 0.6,
+                        filter: "blur(0.5px)",
+                      }}
+                    ></div>
+
+                    <div className="absolute  right-2">
+                      <Pin
+                        color="#2E191E"
+                        size={17}
+                        strokeWidth={2}
+                        style={{ transform: "rotate(30deg)" }}
+                      />
+                    </div>
+                    <p className="font-semibold pr-6">Goal:</p>
+
+                    <p>{initialMessage}</p>
+                  </motion.div>
+                </div>
               )}
-              
+
               <div
                 ref={chatContainerRef}
-                className="flex-1 overflow-y-auto overflow-x-hidden space-y-4 hide-scrollbar pt-4"
-                style={{ height: 'calc(100% - 100px)', maxHeight: 'calc(100vh - 400px)' }}
+                className="flex-1 overflow-y-auto overflow-x-hidden space-y-4 hide-scrollbar"
+                style={{
+                  height: isMobile
+                    ? "calc(100vh - 400px)"
+                    : "calc(100% - 100px)",
+                  flex: "1 1 auto",
+                  position: "relative",
+                }}
               >
-
-
                 {uiState.steps.map((step, index) => {
                   // Determine if this is a system message (like stock price info)
                   const isSystemMessage =
