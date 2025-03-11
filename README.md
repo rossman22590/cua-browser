@@ -25,52 +25,18 @@ You'll need to set up your API keys:
 1. Get your OpenAI API key from [OpenAI's dashboard](https://platform.openai.com/api-keys)
 2. Get your Browserbase API key and project ID from [Browserbase](https://www.browserbase.com)
 
-Update `.env.local` with your API keys:
-
-- `OPENAI_API_KEY`: Your OpenAI API key
-- `BROWSERBASE_API_KEY`: Your Browserbase API key
-- `BROWSERBASE_PROJECT_ID`: Your Browserbase project ID
-
-Then, compile the TypeScript files:
-
-```bash
-npx tsc
-```
-
-Finally, run the development server:
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see CUA Browser in action. You can interact with the CUA Browser by typing natural language commands in the input field and observing the browser's actions in response.
-
-### Key Technologies
-
-- **[Browserbase](https://www.browserbase.com)**: Powers the core browser automation and interaction capabilities
-- **[Next.js](https://nextjs.org)**: Provides the modern web framework foundation
-- **[OpenAI](https://openai.com)**: Enable natural language understanding and decision making
-
-# Computer Use Agent with Browserbase
-
-This is a TypeScript implementation of the Browserbase agent, which allows you to control browsers programmatically using the OpenAI API.
-
-## Setup
-
-1. Ensure you have Node.js installed (version 14.x or later recommended).
-
-2. Clone this repository:
+1. Clone this repository:
    ```bash
    git clone https://github.com/browserbase/cua-browser.git
    cd cua-browser
    ```
 
-3. Install dependencies:
+2. Install dependencies:
    ```bash
    npm install
    ```
 
-4. Create a `.env.local` file with your API keys:
+3. Create a `.env.local` file with your API keys. You can get your API keys from [OpenAI](https://platform.openai.com/api-keys) and [Browserbase](https://www.browserbase.com)
    ```
    OPENAI_API_KEY=your_openai_api_key
    OPENAI_ORG=your_openai_org_id (optional)
@@ -78,19 +44,16 @@ This is a TypeScript implementation of the Browserbase agent, which allows you t
    BROWSERBASE_PROJECT_ID=your_browserbase_project_id
    ```
 
-5. Compile TypeScript:
-   ```bash
-   npx tsc
-   ```
-
-6. Start the development server:
+4. Start the development server:
    ```bash
    npm run dev
    ```
 
+Open [http://localhost:3000](http://localhost:3000) with your browser to see CUA Browser in action. You can interact with the CUA Browser by typing natural language commands in the input field and observing the browser's actions in response.
+
 ## Usage
 
-Here's a basic example of how to use the Browserbase Agent:
+Here's a basic example of how to implement the Browserbase Compute Use Agent:
 
 ```typescript
 import { Agent } from './app/api/agent/agent';
