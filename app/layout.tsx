@@ -21,11 +21,11 @@ const ppNeue = localFont({
 // });
 
 export const metadata: Metadata = {
-  title: "CUA Browser",
+  title: "Computer Use Browser",
   description: "Watch AI browse the web, for free",
   openGraph: {
     images: ["/og.png"],
-    title: "CUA Browser",
+    title: "Computer Use Browser",
     description: "Watch AI browse the web, for free",
     url: "https://cua.browserbase.com",
   },
