@@ -216,7 +216,7 @@ export default function LegacyChatFeed({
     if (isWaitingForInput && inputRef.current) {
       // Try multiple times with increasing delays to ensure focus works
       const focusAttempts = [10, 100, 300, 500];
-      
+
       focusAttempts.forEach((delay) => {
         setTimeout(() => {
           if (inputRef.current) {
@@ -295,10 +295,10 @@ export default function LegacyChatFeed({
     ) => {
       // Ensure stepData is an array before using array methods
       if (!Array.isArray(stepData)) {
-        console.error('stepData is not an array:', stepData);
+        console.error("stepData is not an array:", stepData);
         return;
       }
-      
+
       const hasMessage = stepData.find((step) =>
         step.output.find((item) => item.type === "message")
       );
@@ -836,24 +836,30 @@ export default function LegacyChatFeed({
         });
 
         const nextStepData = await nextStepResponse.json();
-        
+
         // Handle reasoning-only responses by adding a message item if needed
-        if (nextStepData[0]?.output?.length === 1 && 
-            nextStepData[0]?.output[0]?.type === 'reasoning') {
-          console.log('Detected reasoning-only response, adding message item');
+        if (
+          nextStepData[0]?.output?.length === 1 &&
+          nextStepData[0]?.output[0]?.type === "reasoning"
+        ) {
+          console.log("Detected reasoning-only response, adding message item");
           // Add a message item to ensure the reasoning is followed by another item
           nextStepData[0].output.push({
-            id: `msg_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-            type: 'message',
-            role: 'assistant',
-            content: [{
-              type: 'output_text',
-              text: 'I\'ll continue with the task.',
-              annotations: []
-            }]
+            id: `msg_${Date.now()}_${Math.random()
+              .toString(36)
+              .substring(2, 9)}`,
+            type: "message",
+            role: "assistant",
+            content: [
+              {
+                type: "output_text",
+                text: "I'll continue with the task.",
+                annotations: [],
+              },
+            ],
           });
         }
-        
+
         currentResponseRef.current = {
           id: nextStepData[0]?.responseId || null,
         };
@@ -919,24 +925,30 @@ export default function LegacyChatFeed({
         });
 
         const nextStepData = await nextStepResponse.json();
-        
+
         // Handle reasoning-only responses by adding a message item if needed
-        if (nextStepData[0]?.output?.length === 1 && 
-            nextStepData[0]?.output[0]?.type === 'reasoning') {
-          console.log('Detected reasoning-only response, adding message item');
+        if (
+          nextStepData[0]?.output?.length === 1 &&
+          nextStepData[0]?.output[0]?.type === "reasoning"
+        ) {
+          console.log("Detected reasoning-only response, adding message item");
           // Add a message item to ensure the reasoning is followed by another item
           nextStepData[0].output.push({
-            id: `msg_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-            type: 'message',
-            role: 'assistant',
-            content: [{
-              type: 'output_text',
-              text: 'I\'ll help you with that task.',
-              annotations: []
-            }]
+            id: `msg_${Date.now()}_${Math.random()
+              .toString(36)
+              .substring(2, 9)}`,
+            type: "message",
+            role: "assistant",
+            content: [
+              {
+                type: "output_text",
+                text: "I'll help you with that task.",
+                annotations: [],
+              },
+            ],
           });
         }
-        
+
         currentResponseRef.current = {
           id: nextStepData[0].responseId,
         };
@@ -953,12 +965,16 @@ export default function LegacyChatFeed({
         }
       } catch (error) {
         console.error("Error handling user input:", error);
-        
+
         // Check if this is a reasoning item error
-        if (error instanceof Error && 
-            (error.message.includes('reasoning') || 
-             error.message.includes('without its required following item'))) {
-          console.log('Handling reasoning item error, retrying with modified request');
+        if (
+          error instanceof Error &&
+          (error.message.includes("reasoning") ||
+            error.message.includes("without its required following item"))
+        ) {
+          console.log(
+            "Handling reasoning item error, retrying with modified request"
+          );
           try {
             // Try again with a more specific instruction
             const retryResponse = await fetch("/api/cua/step/generate", {
@@ -977,36 +993,44 @@ export default function LegacyChatFeed({
                 ],
               }),
             });
-            
+
             if (!retryResponse.ok) {
               throw new Error(`API error: ${retryResponse.status}`);
             }
-            
+
             const retryData = await retryResponse.json();
-            
+
             // If we still have a reasoning-only response, add a message item
-            if (retryData[0]?.output?.length === 1 && 
-                retryData[0]?.output[0]?.type === 'reasoning') {
-              console.log('Still got reasoning-only response, adding message item');
+            if (
+              retryData[0]?.output?.length === 1 &&
+              retryData[0]?.output[0]?.type === "reasoning"
+            ) {
+              console.log(
+                "Still got reasoning-only response, adding message item"
+              );
               // Add a message item to ensure reasoning is followed by another item
               retryData[0].output.push({
-                id: `msg_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-                type: 'message',
-                role: 'assistant',
-                content: [{
-                  type: 'output_text',
-                  text: 'I\'ll help you with that task.',
-                  annotations: []
-                }]
+                id: `msg_${Date.now()}_${Math.random()
+                  .toString(36)
+                  .substring(2, 9)}`,
+                type: "message",
+                role: "assistant",
+                content: [
+                  {
+                    type: "output_text",
+                    text: "I'll help you with that task.",
+                    annotations: [],
+                  },
+                ],
               });
             }
-            
+
             currentResponseRef.current = {
               id: retryData[0].responseId,
             };
-            
+
             const stepNumber = agentStateRef.current.steps.length + 1;
-            
+
             if (agentStateRef.current.sessionId) {
               // Process the retry step
               return processStep(
@@ -1020,7 +1044,7 @@ export default function LegacyChatFeed({
             // Fall through to the default error handling
           }
         }
-        
+
         // Default error handling
         const errorStep: BrowserStep = {
           text: "Sorry, there was an error processing your request. Please try again.",
@@ -1242,7 +1266,7 @@ export default function LegacyChatFeed({
                 isCompleted={isAgentFinished}
                 initialMessage={initialMessage}
               />
-              
+
               {!isAgentFinished && (
                 <div className="mt-4 flex justify-center items-center space-x-1 text-sm text-[#2E191E]">
                   <SessionControls
@@ -1324,7 +1348,9 @@ export default function LegacyChatFeed({
                     </div>
                     <p className="font-semibold pr-6">Goal:</p>
 
-                    <p>{initialMessage}</p>
+                    <p className="break-words overflow-hidden text-ellipsis max-w-full">
+                      {initialMessage}
+                    </p>
                   </motion.div>
                 </div>
               )}
@@ -1575,7 +1601,7 @@ export default function LegacyChatFeed({
                     // Focus input when animation completes
                     if (inputRef.current) {
                       inputRef.current.focus();
-                      console.log('Animation complete, focusing input');
+                      console.log("Animation complete, focusing input");
                     }
                   }}
                   onSubmit={async (e) => {

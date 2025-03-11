@@ -85,7 +85,7 @@ export default function ChatBlock({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isVisible) return; // Only handle shortcuts when chat is visible
-      
+
       // Handle ESC to close
       if (e.key === "Escape") {
         e.preventDefault();
@@ -107,7 +107,14 @@ export default function ChatBlock({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose, handleSubmit, input, isVisible, isSidebarOpen, setIsSidebarOpen]);
+  }, [
+    onClose,
+    handleSubmit,
+    input,
+    isVisible,
+    isSidebarOpen,
+    setIsSidebarOpen,
+  ]);
 
   return (
     <AnimatePresence mode="sync">
@@ -204,7 +211,13 @@ export default function ChatBlock({
                 <div className="flex-1 bg-white">
                   <iframe
                     className="w-full h-full border-none"
-                    src={initialMessage ? `https://www.google.com/search?q=${encodeURIComponent(initialMessage)}` : 'about:blank'}
+                    src={
+                      initialMessage
+                        ? `https://www.google.com/search?q=${encodeURIComponent(
+                            initialMessage
+                          )}`
+                        : "about:blank"
+                    }
                     sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation"
                     allow="clipboard-read; clipboard-write"
                     title="Browser Content"

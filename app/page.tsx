@@ -164,7 +164,7 @@ export default function Home() {
                         "Find the most recently opened non-draft PR on Github for Browserbase's Stagehand project and make sure the combination-evals in the PR validation passed."
                       )
                     }
-                    className="p-3 text-sm text-gray-600 border border-gray-200 hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply text-left"
+                    className="p-3 text-sm text-gray-600 border border-gray-200 hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply text-left overflow-hidden text-ellipsis break-words whitespace-normal"
                   >
                     Review a pull request on Github
                   </button>
@@ -172,19 +172,19 @@ export default function Home() {
                     onClick={() =>
                       startChat("Play a game of 2048 on https://www.2048.org/. Just try to win and I'll watch. Good luck!")
                     }
-                    className="p-3 text-sm text-gray-600 border border-gray-200 hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply text-left"
+                    className="p-3 text-sm text-gray-600 border border-gray-200 hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply text-left overflow-hidden text-ellipsis break-words whitespace-normal"
                   >
                     Play a challenging game of 2048
                   </button>
                   <button
                     onClick={() => startChat("Please visit https://docs.google.com/spreadsheets/d/16fFgY7y4B2AnZLLFx4ajbBh-cuaXE-PU2ldQx-H-CcA/edit?gid=0#gid=0 and add a new chart to show the breakdown of gender in the data.")}
-                    className="p-3 text-sm text-gray-600 border border-gray-200 hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply text-left"
+                    className="p-3 text-sm text-gray-600 border border-gray-200 hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply text-left overflow-hidden text-ellipsis break-words whitespace-normal"
                   >
                     Analyze a spreadsheet
                   </button>
                   <button
                     onClick={() => startChat("How much is NVIDIA stock?")}
-                    className="p-3 text-sm text-gray-600 border border-gray-200 hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply text-left"
+                    className="p-3 text-sm text-gray-600 border border-gray-200 hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply text-left overflow-hidden text-ellipsis break-words whitespace-normal"
                   >
                     Check the price of NVIDIA stock
                   </button>
