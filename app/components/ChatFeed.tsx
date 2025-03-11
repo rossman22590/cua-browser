@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useState, useEffect, useCallback, useRef } from "react";
+import React from "react";
 import { useWindowSize } from "usehooks-ts";
 import Image from "next/image";
 import posthog from "posthog-js";
@@ -1063,7 +1064,7 @@ export default function LegacyChatFeed({
         </div>
         <motion.button
           onClick={onClose}
-          className="px-4 py-2 hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition-colors rounded-md font-ppsupply flex items-center gap-2"
+          className="px-4 py-2 hover:bg-gray-100 text-gray-600 hover:text-gray-900 rounded-md font-ppsupply animate-[pulseInput_2s_ease-in-out_infinite] transition-all"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
@@ -1075,7 +1076,7 @@ export default function LegacyChatFeed({
       </motion.nav>
       <main className="flex-1 flex flex-col items-center p-6">
         <motion.div
-          className="w-full max-w-[1280px] bg-white border border-gray-200 shadow-sm rounded-lg overflow-hidden"
+          className="w-full max-w-[1280px] bg-white border border-gray-200 shadow-sm overflow-hidden"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
@@ -1102,7 +1103,7 @@ export default function LegacyChatFeed({
                   transition={{ delay: 0.4 }}
                   className="w-full aspect-video flex flex-col items-center"
                 >
-                  <div className="w-full h-full flex items-center justify-center overflow-hidden rounded-lg border border-gray-200 shadow-sm">
+                  <div className="w-full h-full flex items-center justify-center overflow-hidden border border-gray-200 shadow-sm">
                     <iframe
                       src={uiState.sessionUrl}
                       className="w-full h-full"
@@ -1143,7 +1144,7 @@ export default function LegacyChatFeed({
                   transition={{ delay: 0.4 }}
                   className="w-full aspect-video"
                 >
-                  <div className="w-full h-full border border-gray-200 rounded-lg flex items-center justify-center">
+                  <div className="w-full h-full border border-gray-200 flex items-center justify-center">
                     <p className="text-gray-500 text-center">
                       The agent has completed the task
                       <br />
@@ -1157,47 +1158,214 @@ export default function LegacyChatFeed({
             <div className="md:w-[400px] p-6 min-w-0 md:h-[calc(56.25vw-3rem)] md:max-h-[calc(100vh-12rem)] flex flex-col">
               <div
                 ref={chatContainerRef}
-                className="flex-1 overflow-y-auto space-y-4"
+                className="flex-1 overflow-hidden space-y-4 hide-scrollbar" style={{ overflowY: 'auto', overflowX: 'hidden' }}
               >
                 {initialMessage && (
                   <motion.div
                     variants={messageVariants}
-                    className="p-4 bg-blue-50 rounded-lg font-ppsupply"
+                    className="p-4 bg-purple-50 font-ppsupply"
                   >
                     <p className="font-semibold">Goal:</p>
                     <p>{initialMessage}</p>
                   </motion.div>
                 )}
 
-                {uiState.steps.map((step, index) => (
-                  <motion.div
-                    key={index}
-                    variants={messageVariants}
-                    className="p-4 bg-white border border-gray-200 rounded-lg font-ppsupply space-y-2"
-                  >
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-500">
-                        Step {step.stepNumber}
-                      </span>
-                      <span className="px-2 py-1 bg-gray-100 rounded text-xs">
-                        {step.tool}
-                      </span>
-                    </div>
-                    <p className="font-medium">{step.text}</p>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-semibold">Reasoning: </span>
-                      {step.reasoning}
-                    </p>
-                  </motion.div>
-                ))}
-                {isLoading && (
-                  <motion.div
-                    variants={messageVariants}
-                    className="p-4 bg-gray-50 rounded-lg font-ppsupply animate-pulse"
-                  >
-                    Processing...
-                  </motion.div>
-                )}
+                {uiState.steps.map((step, index) => {
+                  // Determine if this is a system message (like stock price info)
+                  const isSystemMessage =
+                    step.tool === "MESSAGE" &&
+                    step.reasoning === "Processing message";
+                  // Determine if this is a user input message
+                  const isUserInput =
+                    step.tool === "MESSAGE" && step.reasoning === "User input";
+                  return (
+                    <motion.div
+                      key={index}
+                      variants={messageVariants}
+                      className={`p-4 ${
+                        isUserInput
+                          ? "bg-white"
+                          : isSystemMessage
+                          ? "bg-[#2E191E] text-white"
+                          : "bg-white"
+                      } border border-gray-200 font-ppsupply space-y-2`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <span
+                          className={`text-sm ${
+                            isSystemMessage ? "text-gray-200" : "text-gray-500"
+                          }`}
+                        >
+                          Step {step.stepNumber}
+                        </span>
+                        <span
+                          className={`px-2 py-1 ${
+                            isSystemMessage
+                              ? " text-gray-200"
+                              : " text-white-200"
+                          } border border-white text-xs`}
+                        >
+                          {step.tool}
+                        </span>
+                      </div>
+                      <div className="font-medium">
+                        {isSystemMessage && step.tool === "MESSAGE" ? (
+                          <>
+                            {(() => {
+                              // Check if this is a message with a question
+                              if (step.text.includes("?")) {
+                                // Find all sentences that end with a question mark
+                                const sentences = step.text.match(
+                                  /[^.!?]+[.!?]+/g
+                                ) || [step.text];
+
+                                // Separate questions from non-questions
+                                const questions = sentences.filter((s) =>
+                                  s.trim().endsWith("?")
+                                );
+                                const nonQuestions = sentences.filter(
+                                  (s) => !s.trim().endsWith("?")
+                                );
+
+                                // Join non-questions as the answer
+                                const answerText = nonQuestions.join(" ").trim();
+
+                                // Join questions as the question
+                                const questionText = questions.join(" ").trim();
+                                
+                                // Check if the entire message is just a question
+                                const isOnlyQuestion = step.text.trim() === questionText;
+                                
+                                // Extract answer content from the message or find it in previous steps
+                                let displayAnswerText = answerText;
+                                
+                                // If there's no answer content but there is a question
+                                if (!displayAnswerText && questionText) {
+                                  // First, check if this step has a specific answer marker
+                                  if (step.text.includes("ANSWER:")) {
+                                    const answerParts = step.text.split("ANSWER:");
+                                    if (answerParts.length > 1) {
+                                      // Extract the text after "ANSWER:" and before any "QUESTION" marker
+                                      let extractedAnswer = answerParts[1].trim();
+                                      if (extractedAnswer.includes("QUESTION")) {
+                                        extractedAnswer = extractedAnswer.split("QUESTION")[0].trim();
+                                      }
+                                      if (extractedAnswer) {
+                                        displayAnswerText = extractedAnswer;
+                                      }
+                                    }
+                                  }
+                                  
+                                  // If we still don't have an answer, look for the first message step
+                                  if (!displayAnswerText) {
+                                    // Look for relevant information in previous steps
+                                    const previousSteps = uiState.steps.slice(0, index);
+                                    
+                                    // Find the first informative MESSAGE step that's not a question
+                                    const infoStep = previousSteps.find(s => 
+                                      s.tool === "MESSAGE" && 
+                                      s.text && 
+                                      !s.text.includes("?") && // Not a question
+                                      s.text.length > 10
+                                    );
+                                    
+                                    if (infoStep) {
+                                      // Use the content from the informative step
+                                      displayAnswerText = infoStep.text;
+                                    } else {
+                                      // Default message if no relevant info found
+                                      displayAnswerText = "I'm currently searching for this information. The results will be displayed here when available.";
+                                    }
+                                  }
+                                } else if (!displayAnswerText) {
+                                  // For other cases with no answer content
+                                  displayAnswerText = step.text;
+                                }
+
+                                // Only render the answer part in this message block
+                                return (
+                                  <div className="mb-3">
+                                    <div className="text-xs font-semibold text-gray-200 mb-1">
+                                      ANSWER:
+                                    </div>
+                                    <div className="p-2">
+                                      <span>{displayAnswerText}</span>
+                                    </div>
+                                  </div>
+                                );
+                              } else {
+                                // For regular messages without questions, format them as answers
+                                return (
+                                  <div className="mb-3">
+                                    {/* <div className="text-xs font-semibold text-gray-200 mb-1">
+                                      ANSWER:
+                                    </div> */}
+                                    <div className="p-2 ">
+                                      <span>{step.text}</span>
+                                    </div>
+                                  </div>
+                                );
+                              }
+                            })()}
+                          </>
+                        ) : (
+                          step.text
+                        )}
+                      </div>
+                      {/* Show reasoning for all steps except the last one */}
+                      {(!isSystemMessage ||
+                        index < uiState.steps.length - 1) && (
+                        <p className="text-sm text-white-200">
+                          <span className="font-semibold">Reasoning: </span>
+                          {step.reasoning}
+                        </p>
+                      )}
+                    </motion.div>
+                  );
+                })}
+
+                {/* Add a separate question message if the last message had a question */}
+                {uiState.steps.length > 0 && (() => {
+                  const lastStep = uiState.steps[uiState.steps.length - 1];
+                  if (lastStep.tool === "MESSAGE" && lastStep.text.includes("?")) {
+                    // Find all sentences that end with a question mark
+                    const sentences = lastStep.text.match(/[^.!?]+[.!?]+/g) || [lastStep.text];
+                    
+                    // Extract questions
+                    const questions = sentences.filter(s => s.trim().endsWith("?"));
+                    const questionText = questions.join(" ").trim();
+                    
+                    // Check if the entire message is just a question
+                    const isOnlyQuestion = lastStep.text.trim() === questionText;
+                    
+                    if (questionText) {
+                      return (
+                        <motion.div
+                          variants={messageVariants}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.5, duration: 0.3 }}
+                          className={`p-4 bg-[#2E191E] text-white font-ppsupply space-y-2 mt-2`}
+                        >
+                          <div className="flex justify-between items-center">
+                            {/* <span className="text-sm text-gray-200">
+                              {isOnlyQuestion ? "Question" : "Follow-up"}
+                            </span> */}
+                            {/* <span className="px-2 py-1 text-gray-200 rounded text-xs">
+                              QUESTION
+                            </span> */}
+                          </div>
+                          <div className="font-medium">
+                            <div className="p-2 border-l-2 ">
+                              <span>{questionText}</span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    }
+                  }
+                  return null;
+                })()}
               </div>
 
               {/* Chat Input */}
@@ -1224,12 +1392,12 @@ export default function LegacyChatFeed({
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                     placeholder="Type your message..."
-                    className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF3B00] focus:border-transparent font-ppsupply animate-[pulseInput_2s_ease-in-out_infinite] transition-all"
+                    className="flex-1 px-4 py-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#FF3B00] focus:border-transparent font-ppsupply animate-[pulseInput_2s_ease-in-out_infinite] transition-all"
                   />
                   <button
                     type="submit"
                     disabled={!userInput.trim()}
-                    className="px-4 py-2 bg-[#FF3B00] text-white rounded-lg font-ppsupply disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#E63500] transition-colors"
+                    className="px-4 py-2 bg-[#FF3B00] text-white font-ppsupply disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#E63500] transition-colors"
                   >
                     Send
                   </button>
