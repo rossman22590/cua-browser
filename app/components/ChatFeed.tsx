@@ -1314,7 +1314,7 @@ export default function LegacyChatFeed({
             target="_blank"
             rel="noopener noreferrer"
           >
-            <button className="h-fit flex items-center justify-center px-3 py-2 bg-white gap-1 text-sm font-medium border border-[#F14A1C] transition-all duration-200 hover:bg-[#F14A1C] group">
+            <button className=" flex items-center justify-center px-3 py-2 bg-white gap-1 text-sm font-medium border border-[#F14A1C] transition-all duration-200 hover:bg-[#F14A1C] group h-full">
               <Layers
                 size={20}
                 className="sm:mr-2 text-[#F14A1C] group-hover:text-white transition-colors duration-200"
@@ -1322,19 +1322,20 @@ export default function LegacyChatFeed({
                 strokeLinecap="square"
                 strokeLinejoin="miter"
               />
-              <span className="hidden sm:inline text-[#F14A1C] group-hover:text-white transition-colors duration-200">Deploy</span>
+              <span className="hidden sm:inline text-[#F14A1C] group-hover:text-white transition-colors  duration-200">
+                Deploy
+              </span>
             </button>
           </a>
           <motion.button
             onClick={onClose}
-            className="px-4 py-2 hover:bg-gray-100 text-gray-600 hover:text-gray-900 font-ppsupply animate-[pulseInput_2s_ease-in-out_infinite] transition-all bg-[#F6F5F5] border border-[#CAC8C7]"
-            whileHover={{ scale: 1.02 }}
+            className="flex items-center justify-center px-3 py-2 bg-[#F6F5F5] gap-1 text-sm font-medium border border-[#CAC8C7] transition-all duration-200 hover:bg-gray-100 h-full"
             whileTap={{ scale: 0.98 }}
           >
-            <span className="flex items-center text-[#10100D] ">
+            <span className="flex items-center text-[#10100D]">
               Close
               {!isMobile && (
-                <kbd className="px-2 text-sm bg-gray-100 ml-2 border border-[#CAC8C7]">
+                <kbd className="px-1.5 text-xs bg-gray-100 ml-2 border border-[#CAC8C7]">
                   ESC
                 </kbd>
               )}
