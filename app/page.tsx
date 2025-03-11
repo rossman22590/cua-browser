@@ -115,7 +115,7 @@ export default function Home() {
             }}
           ></div>
           {/* Top Navigation */}
-          <nav className="flex justify-between items-center px-8 py-4 bg-white border-b border-gray-200 z-10">
+          <nav className="flex justify-between items-center px-8 py-4 bg-white border-b border-[#CAC8C7] z-10">
             <div className="flex items-center gap-3">
               <Image
                 src="/favicon.svg"
@@ -149,9 +149,9 @@ export default function Home() {
           </nav>
 
           {/* Main Content */}
-          <main className="flex-1 flex flex-col items-center justify-center p-6 z-10">
-            <div className="w-full max-w-[640px] bg-white border border-gray-200 shadow-sm z-10">
-              <div className="w-full h-12 bg-white border-b border-gray-200 flex items-center px-4">
+          <main className="flex-1 flex flex-col items-center pt-12 md:pt-16 lg:pt-20 pb-16 md:pb-24 lg:pb-32 px-6 z-10">
+            <div className="w-full max-w-[640px] md:max-w-[800px] lg:max-w-[960px] bg-white border border-[#CAC8C7] shadow-sm z-10">
+              <div className="w-full h-12 md:h-16 bg-white border-b border-[#CAC8C7] flex items-center px-4 md:px-6">
                 <div className="flex items-center gap-2">
                   <Tooltip text="why would you want to close this?">
                     <div className="w-3 h-3  bg-red-500 hover:scale-110 transition-transform" />
@@ -165,12 +165,12 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="p-8 flex flex-col items-center gap-8">
-                <div className="flex flex-col items-center gap-3">
-                  <h1 className="text-2xl font-ppneue text-gray-900 text-center">
+              <div className="p-8 md:p-10 lg:p-12 flex flex-col items-center gap-8 md:gap-10">
+                <div className="flex flex-col items-center gap-3 md:gap-5">
+                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-ppneue text-gray-900 text-center">
                     CUA Browser
                   </h1>
-                  <p className="text-base font-ppsupply text-gray-500 text-center">
+                  <p className="text-base md:text-lg font-ppsupply text-gray-500 text-center">
                     Hit run to watch AI browse the web.
                   </p>
                 </div>
@@ -186,14 +186,14 @@ export default function Home() {
                     const finalMessage = message || input.placeholder;
                     startChat(finalMessage);
                   }}
-                  className="w-full max-w-[720px] flex flex-col items-center gap-3"
+                  className="w-full max-w-[720px] md:max-w-[880px] lg:max-w-[1040px] flex flex-col items-center gap-3 md:gap-5"
                 >
                   <div className="relative w-full">
                     <input
                       name="message"
                       type="text"
                       placeholder="What's the price of NVIDIA stock?"
-                      className="w-full px-4 py-3 sm:pr-[140px] pr-[100px] border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF3B00] focus:border-transparent font-ppsupply text-sm"
+                      className="w-full px-4 py-3 sm:pr-[140px] pr-[100px] border border-[#CAC8C7] text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 focus:border-[#FF3B00] font-ppsupply text-sm md:text-base md:py-5 lg:py-6 transition-all duration-300 focus:pulse-glow-red focus:backdrop-blur-sm focus:bg-opacity-95 focus:bg-white"
                       style={{
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
@@ -206,16 +206,16 @@ export default function Home() {
                     </div>
                   </div>
                 </form>
-                <div className="grid grid-cols-2 gap-3 w-full">
+                <div className="grid grid-cols-2 gap-3 md:gap-4 lg:gap-5 w-full">
                   <button
                     onClick={() =>
                       startChat(
                         "Find the most recently opened non-draft PR on Github for Browserbase's Stagehand project and make sure the combination-evals in the PR validation passed."
                       )
                     }
-                    className="p-3 text-sm text-gray-600 border border-gray-200 hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply text-left overflow-hidden text-ellipsis break-words whitespace-normal"
+                    className="p-3 md:p-4 lg:p-6 text-sm md:text-base lg:text-xl text-[#2E191E] border border-[#CAC8C7] hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply font-medium text-center overflow-hidden text-ellipsis break-words whitespace-normal md:min-h-[100px] lg:min-h-[120px] flex items-center justify-center backdrop-blur-sm bg-opacity-60 bg-[rgba(245,240,255,0.15)] hover:bg-[rgba(255,59,0,0.05)]"
                   >
-                    Review a pull request on Github
+                    <span className="w-full px-2">Review a pull request<br />on Github</span>
                   </button>
                   <button
                     onClick={() =>
@@ -223,9 +223,9 @@ export default function Home() {
                         "Play a game of 2048 on https://www.2048.org/. Just try to win and I'll watch. Good luck!"
                       )
                     }
-                    className="p-3 text-sm text-gray-600 border border-gray-200 hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply text-left overflow-hidden text-ellipsis break-words whitespace-normal"
+                    className="p-3 md:p-4 lg:p-6 text-sm md:text-base lg:text-xl text-[#2E191E] border border-[#CAC8C7] hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply font-medium text-center overflow-hidden text-ellipsis break-words whitespace-normal md:min-h-[100px] lg:min-h-[120px] flex items-center justify-center backdrop-blur-sm bg-opacity-60 bg-[rgba(245,240,255,0.15)] hover:bg-[rgba(255,59,0,0.05)]"
                   >
-                    Play a challenging game of 2048
+                    <span className="w-full px-2">Play a challenging<br />game of 2048</span>
                   </button>
                   <button
                     onClick={() =>
@@ -233,15 +233,15 @@ export default function Home() {
                         "Please visit https://docs.google.com/spreadsheets/d/16fFgY7y4B2AnZLLFx4ajbBh-cuaXE-PU2ldQx-H-CcA/edit?gid=0#gid=0 and add a new chart to show the breakdown of gender in the data."
                       )
                     }
-                    className="p-3 text-sm text-gray-600 border border-gray-200 hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply text-left overflow-hidden text-ellipsis break-words whitespace-normal"
+                    className="p-3 md:p-4 lg:p-6 text-sm md:text-base lg:text-xl text-[#2E191E] border border-[#CAC8C7] hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply font-medium text-center overflow-hidden text-ellipsis break-words whitespace-normal md:min-h-[100px] lg:min-h-[120px] flex items-center justify-center backdrop-blur-sm bg-opacity-60 bg-[rgba(245,240,255,0.15)] hover:bg-[rgba(255,59,0,0.05)]"
                   >
-                    Analyze a spreadsheet
+                    <span className="w-full px-2">Analyze a<br />spreadsheet</span>
                   </button>
                   <button
                     onClick={() => startChat("How much is NVIDIA stock?")}
-                    className="p-3 text-sm text-gray-600 border border-gray-200 hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply text-left overflow-hidden text-ellipsis break-words whitespace-normal"
+                    className="p-3 md:p-4 lg:p-6 text-sm md:text-base lg:text-xl text-[#2E191E] border border-[#CAC8C7] hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply font-medium text-center overflow-hidden text-ellipsis break-words whitespace-normal md:min-h-[100px] lg:min-h-[120px] flex items-center justify-center backdrop-blur-sm bg-opacity-60 bg-[rgba(245,240,255,0.15)] hover:bg-[rgba(255,59,0,0.05)]"
                   >
-                    Check the price of NVIDIA stock
+                    <span className="w-full px-2">Check the price<br />of NVIDIA stock</span>
                   </button>
                 </div>
               </div>
@@ -255,7 +255,7 @@ export default function Home() {
                 ease: [0.25, 0.1, 0.25, 1.0],
                 staggerChildren: 0.1,
               }}
-              className="bg-[#2E191E] p-4 mt-8 w-full max-w-[640px] relative overflow-hidden"
+              className="bg-[#28171B] p-4 md:p-6 lg:p-8 mt-8 md:mt-10 w-full max-w-[640px] md:max-w-[800px] lg:max-w-[960px] relative overflow-hidden backdrop-blur-sm bg-opacity-90"
             >
               {/* Tech animation background elements */}
               <motion.div
@@ -269,7 +269,7 @@ export default function Home() {
               </motion.div>
 
               <motion.p
-                className="text-base font-ppsupply text-center text-white relative z-10"
+                className="text-base md:text-lg font-ppsupply text-center text-white relative z-10 font-semibold"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.5 }}
