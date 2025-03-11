@@ -1,7 +1,6 @@
 # CUA Browser
 
-> [!INFO]
-> This is a playground for you to test, explore, and get inspired by the power of Browserbase and Open AI's Computer Use Agent. This is free and always will be! It's not a product, just a demo playground
+This is a playground for you to test, explore, and get inspired by the power of Browserbase and Open AI's Computer Use Agent. This is free and always will be! It's not a product, just a demo playground
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fbrowserbase%2Fcua-browser&env=OPENAI_API_KEY,BROWSERBASE_API_KEY,BROWSERBASE_PROJECT_ID&envDescription=API%20keys%20needed%20to%20run%20CUA%20Browser&envLink=https%3A%2F%2Fgithub.com%2Fbrowserbase%2Fcua-browser%23environment-variables)
 
@@ -49,30 +48,10 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see CUA
 ### Key Technologies
 
 - **[Browserbase](https://www.browserbase.com)**: Powers the core browser automation and interaction capabilities
-- **[Stagehand](https://www.stagehand.dev)**: Handles precise DOM manipulation and state management
 - **[Next.js](https://nextjs.org)**: Provides the modern web framework foundation
 - **[OpenAI](https://openai.com)**: Enable natural language understanding and decision making
 
-## Contributing
-
-We welcome contributions! Whether it's:
-
-- Adding new features
-- Improving documentation
-- Reporting bugs
-- Suggesting enhancements
-
-Please feel free to open issues and pull requests.
-
-## License
-
-CUA Browser is open source software licensed under the MIT license.
-
-## Acknowledgments
-
-This project is inspired by OpenAI's CUA feature and builds upon various open source technologies including Next.js, React, Browserbase, and Stagehand.
-
-# Browserbase Agent TypeScript Implementation
+# Computer Use Agent with Browserbase
 
 This is a TypeScript implementation of the Browserbase agent, which allows you to control browsers programmatically using the OpenAI API.
 
