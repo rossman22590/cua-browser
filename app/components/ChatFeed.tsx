@@ -845,9 +845,7 @@ export default function LegacyChatFeed({
           console.log("Detected reasoning-only response, adding message item");
           // Add a message item to ensure the reasoning is followed by another item
           nextStepData[0].output.push({
-            id: `msg_${Date.now()}_${Math.random()
-              .toString(36)
-              .substring(2, 9)}`,
+            id: `msg_fallback_${nextStepData[0]?.responseId || 'default'}`,
             type: "message",
             role: "assistant",
             content: [
@@ -934,9 +932,7 @@ export default function LegacyChatFeed({
           console.log("Detected reasoning-only response, adding message item");
           // Add a message item to ensure the reasoning is followed by another item
           nextStepData[0].output.push({
-            id: `msg_${Date.now()}_${Math.random()
-              .toString(36)
-              .substring(2, 9)}`,
+            id: `msg_fallback_${nextStepData[0]?.responseId || 'default'}`,
             type: "message",
             role: "assistant",
             content: [
@@ -1010,9 +1006,7 @@ export default function LegacyChatFeed({
               );
               // Add a message item to ensure reasoning is followed by another item
               retryData[0].output.push({
-                id: `msg_${Date.now()}_${Math.random()
-                  .toString(36)
-                  .substring(2, 9)}`,
+                id: `msg_fallback_${retryData[0]?.responseId || 'default'}`,
                 type: "message",
                 role: "assistant",
                 content: [
