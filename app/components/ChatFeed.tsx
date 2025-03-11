@@ -1045,7 +1045,7 @@ export default function LegacyChatFeed({
       exit="exit"
     >
       <motion.nav
-        className="flex justify-between items-center px-8 py-4 bg-white border-b border-gray-200 shadow-sm"
+        className="flex justify-between items-center px-8 py-4 bg-white border-b border-[#CAC8C7] shadow-sm"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -1076,12 +1076,12 @@ export default function LegacyChatFeed({
       </motion.nav>
       <main className="flex-1 flex flex-col items-center p-6">
         <motion.div
-          className="w-full max-w-[1280px] bg-white border border-gray-200 shadow-sm overflow-hidden"
+          className="w-full max-w-[1280px] bg-white border border-[#CAC8C7] shadow-sm overflow-hidden"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          <div className="w-full h-12 bg-white border-b border-gray-200 flex items-center px-4">
+          <div className="w-full h-12 bg-white border-b border-[#CAC8C7] flex items-center px-4">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-red-500" />
               <div className="w-3 h-3 rounded-full bg-yellow-500" />
@@ -1096,14 +1096,14 @@ export default function LegacyChatFeed({
 
           <div className="flex flex-col md:flex-row">
             {uiState.sessionUrl && !isAgentFinished && (
-              <div className="flex-1 p-6 border-b md:border-b-0 md:border-l border-gray-200 order-first md:order-last flex items-center justify-center">
+              <div className="flex-1 p-6 border-b md:border-b-0 md:border-l border-[#CAC8C7] order-first md:order-last flex items-center justify-center">
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.4 }}
                   className="w-full aspect-video flex flex-col items-center"
                 >
-                  <div className="w-full h-full flex items-center justify-center overflow-hidden border border-gray-200 shadow-sm">
+                  <div className="w-full h-full flex items-center justify-center overflow-hidden border border-[#CAC8C7] shadow-sm">
                     <iframe
                       src={uiState.sessionUrl}
                       className="w-full h-full"
@@ -1137,14 +1137,14 @@ export default function LegacyChatFeed({
               </div>
             )}
             {isAgentFinished && (
-              <div className="flex-1 p-6 border-b md:border-b-0 md:border-l border-gray-200 order-first md:order-last">
+              <div className="flex-1 p-6 border-b md:border-b-0 md:border-l border-[#CAC8C7] order-first md:order-last">
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.4 }}
                   className="w-full aspect-video"
                 >
-                  <div className="w-full h-full border border-gray-200 flex items-center justify-center">
+                  <div className="w-full h-full border border-[#CAC8C7] flex items-center justify-center">
                     <p className="text-gray-500 text-center">
                       The agent has completed the task
                       <br />
@@ -1158,12 +1158,13 @@ export default function LegacyChatFeed({
             <div className="md:w-[400px] p-6 min-w-0 md:h-[calc(56.25vw-3rem)] md:max-h-[calc(100vh-12rem)] flex flex-col">
               <div
                 ref={chatContainerRef}
-                className="flex-1 overflow-hidden space-y-4 hide-scrollbar" style={{ overflowY: 'auto', overflowX: 'hidden' }}
+                className="flex-1 overflow-hidden space-y-4 hide-scrollbar"
+                style={{ overflowY: "auto", overflowX: "hidden" }}
               >
                 {initialMessage && (
                   <motion.div
                     variants={messageVariants}
-                    className="p-4 bg-purple-50 font-ppsupply"
+                    className="p-4 bg-purple-50 border border-[#CAC8C7] font-ppsupply"
                   >
                     <p className="font-semibold">Goal:</p>
                     <p>{initialMessage}</p>
@@ -1187,23 +1188,27 @@ export default function LegacyChatFeed({
                           ? "bg-white"
                           : isSystemMessage
                           ? "bg-[#2E191E] text-white"
-                          : "bg-white"
-                      } border border-gray-200 font-ppsupply space-y-2`}
+                          : "bg-[#FCFCFC]"
+                      } border border-[#B3B1B0] font-ppsupply space-y-2`}
                     >
                       <div className="flex justify-between items-center">
+                        {/* Step number */}
                         <span
                           className={`text-sm ${
-                            isSystemMessage ? "text-gray-200" : "text-gray-500"
+                            isSystemMessage
+                              ? "text-[gray-200]"
+                              : "text-[#2E191E]"
                           }`}
                         >
                           Step {step.stepNumber}
                         </span>
+                        {/* Tool name */}
                         <span
                           className={`px-2 py-1 ${
                             isSystemMessage
                               ? " text-gray-200"
                               : " text-white-200"
-                          } border border-white text-xs`}
+                          } border border-[#CAC8C7] text-xs`}
                         >
                           {step.tool}
                         </span>
@@ -1228,53 +1233,67 @@ export default function LegacyChatFeed({
                                 );
 
                                 // Join non-questions as the answer
-                                const answerText = nonQuestions.join(" ").trim();
+                                const answerText = nonQuestions
+                                  .join(" ")
+                                  .trim();
 
                                 // Join questions as the question
                                 const questionText = questions.join(" ").trim();
-                                
+
                                 // Check if the entire message is just a question
-                                const isOnlyQuestion = step.text.trim() === questionText;
-                                
+                                const isOnlyQuestion =
+                                  step.text.trim() === questionText;
+
                                 // Extract answer content from the message or find it in previous steps
                                 let displayAnswerText = answerText;
-                                
+
                                 // If there's no answer content but there is a question
                                 if (!displayAnswerText && questionText) {
                                   // First, check if this step has a specific answer marker
                                   if (step.text.includes("ANSWER:")) {
-                                    const answerParts = step.text.split("ANSWER:");
+                                    const answerParts =
+                                      step.text.split("ANSWER:");
                                     if (answerParts.length > 1) {
                                       // Extract the text after "ANSWER:" and before any "QUESTION" marker
-                                      let extractedAnswer = answerParts[1].trim();
-                                      if (extractedAnswer.includes("QUESTION")) {
-                                        extractedAnswer = extractedAnswer.split("QUESTION")[0].trim();
+                                      let extractedAnswer =
+                                        answerParts[1].trim();
+                                      if (
+                                        extractedAnswer.includes("QUESTION")
+                                      ) {
+                                        extractedAnswer = extractedAnswer
+                                          .split("QUESTION")[0]
+                                          .trim();
                                       }
                                       if (extractedAnswer) {
                                         displayAnswerText = extractedAnswer;
                                       }
                                     }
                                   }
-                                  
+
                                   // If we still don't have an answer, look for the first message step
                                   if (!displayAnswerText) {
                                     // Look for relevant information in previous steps
-                                    const previousSteps = uiState.steps.slice(0, index);
-                                    
-                                    // Find the first informative MESSAGE step that's not a question
-                                    const infoStep = previousSteps.find(s => 
-                                      s.tool === "MESSAGE" && 
-                                      s.text && 
-                                      !s.text.includes("?") && // Not a question
-                                      s.text.length > 10
+                                    const previousSteps = uiState.steps.slice(
+                                      0,
+                                      index
                                     );
-                                    
+
+                                    // Find the first informative MESSAGE step that's not a question
+                                    const infoStep = previousSteps.find(
+                                      (s) =>
+                                        s.tool === "MESSAGE" &&
+                                        s.text &&
+                                        !s.text.includes("?") && // Not a question
+                                        s.text.length > 10
+                                    );
+
                                     if (infoStep) {
                                       // Use the content from the informative step
                                       displayAnswerText = infoStep.text;
                                     } else {
                                       // Default message if no relevant info found
-                                      displayAnswerText = "I'm currently searching for this information. The results will be displayed here when available.";
+                                      displayAnswerText =
+                                        "I'm currently searching for this information. The results will be displayed here when available.";
                                     }
                                   }
                                 } else if (!displayAnswerText) {
@@ -1325,47 +1344,56 @@ export default function LegacyChatFeed({
                 })}
 
                 {/* Add a separate question message if the last message had a question */}
-                {uiState.steps.length > 0 && (() => {
-                  const lastStep = uiState.steps[uiState.steps.length - 1];
-                  if (lastStep.tool === "MESSAGE" && lastStep.text.includes("?")) {
-                    // Find all sentences that end with a question mark
-                    const sentences = lastStep.text.match(/[^.!?]+[.!?]+/g) || [lastStep.text];
-                    
-                    // Extract questions
-                    const questions = sentences.filter(s => s.trim().endsWith("?"));
-                    const questionText = questions.join(" ").trim();
-                    
-                    // Check if the entire message is just a question
-                    const isOnlyQuestion = lastStep.text.trim() === questionText;
-                    
-                    if (questionText) {
-                      return (
-                        <motion.div
-                          variants={messageVariants}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.5, duration: 0.3 }}
-                          className={`p-4 bg-[#2E191E] text-white font-ppsupply space-y-2 mt-2`}
-                        >
-                          <div className="flex justify-between items-center">
-                            {/* <span className="text-sm text-gray-200">
+                {uiState.steps.length > 0 &&
+                  (() => {
+                    const lastStep = uiState.steps[uiState.steps.length - 1];
+                    if (
+                      lastStep.tool === "MESSAGE" &&
+                      lastStep.text.includes("?")
+                    ) {
+                      // Find all sentences that end with a question mark
+                      const sentences = lastStep.text.match(
+                        /[^.!?]+[.!?]+/g
+                      ) || [lastStep.text];
+
+                      // Extract questions
+                      const questions = sentences.filter((s) =>
+                        s.trim().endsWith("?")
+                      );
+                      const questionText = questions.join(" ").trim();
+
+                      // Check if the entire message is just a question
+                      const isOnlyQuestion =
+                        lastStep.text.trim() === questionText;
+
+                      if (questionText) {
+                        return (
+                          <motion.div
+                            variants={messageVariants}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5, duration: 0.3 }}
+                            className={`p-4 bg-[#2E191E] text-white font-ppsupply space-y-2 mt-2`}
+                          >
+                            <div className="flex justify-between items-center">
+                              {/* <span className="text-sm text-gray-200">
                               {isOnlyQuestion ? "Question" : "Follow-up"}
                             </span> */}
-                            {/* <span className="px-2 py-1 text-gray-200 rounded text-xs">
+                              {/* <span className="px-2 py-1 text-gray-200 rounded text-xs">
                               QUESTION
                             </span> */}
-                          </div>
-                          <div className="font-medium">
-                            <div className="p-2 border-l-2 ">
-                              <span>{questionText}</span>
                             </div>
-                          </div>
-                        </motion.div>
-                      );
+                            <div className="font-medium">
+                              <div className="p-2 border-l-2 ">
+                                <span>{questionText}</span>
+                              </div>
+                            </div>
+                          </motion.div>
+                        );
+                      }
                     }
-                  }
-                  return null;
-                })()}
+                    return null;
+                  })()}
               </div>
 
               {/* Chat Input */}
@@ -1392,7 +1420,7 @@ export default function LegacyChatFeed({
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                     placeholder="Type your message..."
-                    className="flex-1 px-4 py-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#FF3B00] focus:border-transparent font-ppsupply animate-[pulseInput_2s_ease-in-out_infinite] transition-all"
+                    className="flex-1 px-4 py-2 border border-[#CAC8C7] focus:outline-none focus:ring-2 focus:ring-[#FF3B00] focus:border-transparent font-ppsupply animate-[pulseInput_2s_ease-in-out_infinite] transition-all"
                   />
                   <button
                     type="submit"
