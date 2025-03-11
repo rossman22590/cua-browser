@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 interface SessionControlsProps {
@@ -14,6 +16,13 @@ const formatTime = (seconds: number): string => {
 };
 
 export const SessionControls: React.FC<SessionControlsProps> = ({ sessionTime, onStop }) => {
+  // Use client-side rendering for the time display to avoid hydration mismatch
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
   return (
     <div className="flex flex-row items-center gap-2 bg-[#F6F5F5] px-2 py-1 border border-[#CAC8C7]">
       <div className="flex flex-row items-center gap-1">
@@ -30,7 +39,7 @@ export const SessionControls: React.FC<SessionControlsProps> = ({ sessionTime, o
         </svg>
         <div className="flex items-center px-1 py-1 text-sm text-[#2E191E]">
           <span className="font-medium">Session time:</span>{" "}
-          <span className="ml-1">{formatTime(sessionTime)}</span>
+          <span className="ml-1">{mounted ? formatTime(sessionTime) : '0:00'}</span>
         </div>
       </div>
       

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -107,11 +109,15 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
         // Session is starting, curtains closed initially
         setCurtainState('closed');
       } else if (sessionUrl && !isCompleted) {
-        // Session URL is available, open the curtains
-        setCurtainState('opening');
-        // After a delay, set to fully open
-        const timer = setTimeout(() => setCurtainState('open'), 800);
-        return () => clearTimeout(timer);
+        // Session URL is available, but wait 1 second before opening the curtains
+        const openTimer = setTimeout(() => {
+          setCurtainState('opening');
+          // After animation delay, set to fully open
+          const openCompleteTimer = setTimeout(() => setCurtainState('open'), 800);
+          return () => clearTimeout(openCompleteTimer);
+        }, 1000); // Wait 1 second before starting to open
+        
+        return () => clearTimeout(openTimer);
       } else if (isCompleted) {
         // Session is completed, close the curtains
         setCurtainState('closing');
@@ -158,6 +164,7 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
               initial="visible"
               animate={curtainState === 'opening' || curtainState === 'open' ? "open" : "close"}
             />
+            {/* Browser Content */}
             {!isCompleted ? (
               sessionUrl ? (
                 <iframe
@@ -171,21 +178,48 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
                 />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center" style={{ backgroundColor: "rgba(245, 240, 255, 0.4)" }}>
-                  <div className="animate-pulse flex flex-col items-center space-y-4 w-full">
-                    <div className="h-6 bg-gray-200 rounded w-3/4 max-w-md"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2 max-w-sm"></div>
-                    <div className="mt-6 flex justify-center">
-                      <div className="rounded-full bg-gray-200 h-16 w-16"></div>
+                  <div className="flex flex-col items-center space-y-6 w-full">
+                    <span className="text-2xl font-semibold text-[#2E191E]">Starting CUA Browser</span>
+                    <div className="animate-pulse flex flex-col items-center space-y-4 w-full">
+                      <div className="mt-4 flex justify-center">
+                        <div className="rounded-full bg-gray-200 h-16 w-16"></div>
+                      </div>
                     </div>
-                    <div className="h-4 bg-gray-200 rounded w-1/3 max-w-xs"></div>
                   </div>
                 </div>
               )
-            ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center" style={{ backgroundColor: "rgba(245, 240, 255, 0.4)" }}>
-                <div className="flex flex-col items-center space-y-4 w-full">
-                  <span className="text-lg font-bold text-white">The agent has completed the task</span>
-                  <span className="text-base italic text-white">&quot;{initialMessage}&quot;</span>
+            ) : null}
+            
+            {/* Completion Message - Always rendered but only visible when completed */}
+            {isCompleted && (
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-4 md:p-8" 
+                style={{ 
+                  backdropFilter: "blur(3px)", 
+                  backgroundColor: "rgba(46, 25, 30, 0.2)"
+                }}
+              >
+                <div className="flex flex-col items-center space-y-4 md:space-y-6 w-full max-w-[90%] md:max-w-[80%] text-center">
+                  <span className="text-xl md:text-3xl font-semibold text-white">The agent has completed the task</span>
+                  <span className="text-base md:text-xl italic text-white break-words">&quot;{initialMessage}&quot;</span>
+                  
+                  <motion.button
+                    className="px-4 md:px-6 py-2 md:py-3 text-white text-base md:text-lg font-medium mt-4 md:mt-8"
+                    style={{ 
+                      background: '#F14A1C',
+                      backdropFilter: 'blur(12px)',
+                      // boxShadow: '0 4px 20px rgba(245, 240, 255, 0.3)',
+                      border: '1px solid rgba(255, 255, 255, 0.3)'
+                    }}
+                    whileHover={{ 
+                      scale: 0.95, 
+                      // boxShadow: '0 6px 25px rgba(245, 240, 255, 0.4)',
+                      background: '#F14A1C',
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => window.location.reload()}
+                  >
+                   Want to try Browserbase?
+                  </motion.button>
                 </div>
               </div>
             )}
