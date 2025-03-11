@@ -11,15 +11,6 @@ export async function POST(request: Request) {
     const { sessionId, output } = body;
     console.log("output", output);
 
-    // Validate output format to prevent errors
-    if (!output || !output.output || !Array.isArray(output.output)) {
-      console.log("Invalid output format:", output);
-      return NextResponse.json(
-        { error: 'Invalid output format. Expected object with output array.' },
-        { status: 400 }
-      );
-    }
-
     computer = new BrowserbaseBrowser(1024, 768, "us-west-2", false, sessionId);
     agent = new Agent("computer-use-preview-2025-02-04", computer);
     if (!sessionId) {

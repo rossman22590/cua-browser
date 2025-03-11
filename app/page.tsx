@@ -124,8 +124,8 @@ export default function Home() {
                 width={32}
                 height={32}
               />
-              <span className="font-ppsupply text-gray-900">
-                www.browserbase.com/computer-use
+              <span className="font-ppsupply text-gray-900 font-semibold">
+                CUA Browser
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -134,15 +134,15 @@ export default function Home() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <button className="h-fit flex items-center justify-center px-4 py-2  bg-[#1b2128] hover:bg-[#1d232b] gap-1 text-sm font-medium text-white border border-pillSecondary transition-colors duration-200">
+                <button className="h-fit flex items-center justify-center px-3 py-2 bg-[#1b2128] hover:bg-[#1d232b] gap-1 text-sm font-medium text-white border border-pillSecondary transition-colors duration-200">
                   <Image
                     src="/github.svg"
                     alt="GitHub"
                     width={20}
                     height={20}
-                    className="mr-2"
+                    className="sm:mr-2"
                   />
-                  View GitHub
+                  <span className="hidden sm:inline">View GitHub</span>
                 </button>
               </a>
             </div>
@@ -159,7 +159,7 @@ export default function Home() {
                   <Tooltip text="s/o to the 🅱️rowserbase devs">
                     <div className="w-3 h-3  bg-yellow-500 hover:scale-110 transition-transform" />
                   </Tooltip>
-                  <Tooltip text="@pk_iv was here">
+                  <Tooltip text="@pk_iv and @alexdphan were here">
                     <div className="w-3 h-3  bg-green-500 hover:scale-110 transition-transform" />
                   </Tooltip>
                 </div>
@@ -193,7 +193,7 @@ export default function Home() {
                       name="message"
                       type="text"
                       placeholder="What's the price of NVIDIA stock?"
-                      className="w-full px-4 py-3 sm:pr-[140px] pr-[100px] border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF3B00] focus:border-transparent font-ppsupply"
+                      className="w-full px-4 py-3 sm:pr-[140px] pr-[100px] border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF3B00] focus:border-transparent font-ppsupply text-sm"
                       style={{
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
@@ -246,16 +246,45 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <p className="text-base font-ppsupply text-center mt-8">
-              Powered by{" "}
-              <a
-                href="https://browserbase.com"
-                className="text-[#FF3B00] hover:underline"
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{
+                duration: 0.5,
+                delay: 0.2,
+                ease: [0.25, 0.1, 0.25, 1.0],
+                staggerChildren: 0.1,
+              }}
+              className="bg-[#2E191E] p-4 mt-8 w-full max-w-[640px] relative overflow-hidden"
+            >
+              {/* Tech animation background elements */}
+              <motion.div
+                className="absolute inset-0 opacity-10"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.1 }}
+                transition={{ duration: 0.5 }}
               >
-                🅱️ Browserbase
-              </a>{" "}
-              and OpenAI&apos;s computer-use model preview.
-            </p>
+                <div className="absolute top-0 right-0 sm:w-20 sm:h-20 w-16 h-16 bg-[#FF3B00] rounded-full blur-xl"></div>
+                <div className="absolute bottom-0 left-0 w-16 h-16 bg-blue-400 rounded-full blur-xl"></div>
+              </motion.div>
+
+              <motion.p
+                className="text-base font-ppsupply text-center text-white relative z-10"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+              >
+                Powered by{" "}
+                <motion.a
+                  href="https://browserbase.com"
+                  className="text-[#FF3B00] hover:underline relative"
+                  whileHover={{ scale: 1.05 }}
+                >
+                  🅱️ Browserbase
+                </motion.a>{" "}
+                and OpenAI&apos;s computer-use model preview.
+              </motion.p>
+            </motion.div>
           </main>
         </div>
       ) : (

@@ -12,20 +12,6 @@ export async function POST(request: Request) {
     const { sessionId, responseId, input } = body;
     console.log("input", input);
 
-    // Validate input format to prevent errors
-    if (!input || (typeof input !== 'string' && !Array.isArray(input))) {
-      console.log("Invalid input format:", input);
-      return NextResponse.json(
-        { error: "Invalid input format. Expected string or array." },
-        { status: 400 }
-      );
-    }
-
-    // Convert string input to proper InputItem array format if needed
-    const inputItems = typeof input === 'string' 
-      ? [{ role: 'user', content: input }] 
-      : input;
-
     computer = new BrowserbaseBrowser(1024, 768, "us-west-2", false, sessionId);
     agent = new Agent("computer-use-preview-2025-02-04", computer);
     if (!sessionId) {
@@ -35,7 +21,7 @@ export async function POST(request: Request) {
       );
     }
 
-    let result = await agent.getAction(inputItems, responseId);
+    let result = await agent.getAction(input, responseId);
 
     // If there's a screenshot returned, just handle it right here so we don't have to make a round trip.
     if (result.output.find((item) => item.type === "computer_call")) {
