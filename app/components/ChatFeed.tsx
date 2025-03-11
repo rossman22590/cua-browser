@@ -13,7 +13,7 @@ import {
   OutputText,
 } from "../api/cua/agent/types";
 // import { SlidingNumber } from "../components/ui/sliding-number";
-import { Pin } from "lucide-react";
+import { Layers, Pin } from "lucide-react";
 import { SessionControls } from "./SessionControls";
 import BrowserSessionContainer from "./BrowserSessionContainer";
 
@@ -1290,32 +1290,57 @@ export default function LegacyChatFeed({
         }}
       >
         <div className="flex items-center gap-2">
-          <Image
-            src="/favicon.svg"
-            alt="CUA Browser"
-            className="w-8 h-8"
-            width={32}
-            height={32}
-          />
-          <span className="font-ppsupply text-xl font-bold text-[#100D0D]">
-            CUA Browser
-          </span>
+          <a
+            href="https://www.browserbase.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 hover:opacity-90 transition-opacity duration-200"
+          >
+            <Image
+              src="/favicon.svg"
+              alt="CUA Browser"
+              className="w-8 h-8"
+              width={32}
+              height={32}
+            />
+            <span className="font-ppsupply text-xl font-bold text-[#100D0D]">
+              CUA Browser
+            </span>
+          </a>
         </div>
-        <motion.button
-          onClick={onClose}
-          className="px-4 py-2 hover:bg-gray-100 text-gray-600 hover:text-gray-900 font-ppsupply animate-[pulseInput_2s_ease-in-out_infinite] transition-all bg-[#F6F5F5] border border-[#CAC8C7]"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <span className="flex items-center text-[#10100D] ">
-            Close
-            {!isMobile && (
-              <kbd className="px-2 text-sm bg-gray-100 ml-2 border border-[#CAC8C7]">
-                ESC
-              </kbd>
-            )}
-          </span>
-        </motion.button>
+        <div className="flex items-center gap-2">
+          <a
+            href="https://browserbase-git-nosajio-cua-page-browserbase-com.vercel.app/computer-use/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <button className="h-fit flex items-center justify-center px-3 py-2 bg-white gap-1 text-sm font-medium border border-[#F14A1C] transition-all duration-200 hover:bg-[#F14A1C] group">
+              <Layers
+                size={20}
+                className="sm:mr-2 text-[#F14A1C] group-hover:text-white transition-colors duration-200"
+                strokeWidth={2}
+                strokeLinecap="square"
+                strokeLinejoin="miter"
+              />
+              <span className="hidden sm:inline text-[#F14A1C] group-hover:text-white transition-colors duration-200">Deploy</span>
+            </button>
+          </a>
+          <motion.button
+            onClick={onClose}
+            className="px-4 py-2 hover:bg-gray-100 text-gray-600 hover:text-gray-900 font-ppsupply animate-[pulseInput_2s_ease-in-out_infinite] transition-all bg-[#F6F5F5] border border-[#CAC8C7]"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <span className="flex items-center text-[#10100D] ">
+              Close
+              {!isMobile && (
+                <kbd className="px-2 text-sm bg-gray-100 ml-2 border border-[#CAC8C7]">
+                  ESC
+                </kbd>
+              )}
+            </span>
+          </motion.button>
+        </div>
       </motion.nav>
       <main
         className="flex-1 flex flex-col items-center sm:p-4 md:p-6 relative overflow-hidden"
