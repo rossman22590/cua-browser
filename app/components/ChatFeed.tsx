@@ -58,26 +58,38 @@ const pulseInputKeyframes = `
 @keyframes pulseInput {
   0% {
     box-shadow: 0 0 0 0 rgba(255, 59, 0, 0.4);
+    border-color: rgba(255, 59, 0, 0.4);
   }
-  70% {
-    box-shadow: 0 0 0 6px rgba(255, 59, 0, 0);
+  50% {
+    box-shadow: 0 0 10px 2px rgba(255, 59, 0, 0.3);
+    border-color: rgba(255, 59, 0, 0.8);
   }
   100% {
     box-shadow: 0 0 0 0 rgba(255, 59, 0, 0);
+    border-color: rgba(255, 59, 0, 0.4);
+  }
+}
+
+@keyframes glowingBorder {
+  0% {
+    border-color: rgba(245, 240, 255, 0.6);
+    box-shadow: 0 0 5px rgba(245, 240, 255, 0.3);
+  }
+  50% {
+    border-color: rgba(255, 59, 0, 0.8);
+    box-shadow: 0 0 10px rgba(255, 59, 0, 0.5);
+  }
+  100% {
+    border-color: rgba(245, 240, 255, 0.6);
+    box-shadow: 0 0 5px rgba(245, 240, 255, 0.3);
   }
 }`;
 
 const formatTime = (seconds: number): string => {
-  if (seconds < 60) {
-    // Only show seconds if less than a minute
-    return seconds.toString();
-  }
-  // Show minutes:seconds format once we reach 1 minute or more
+  // Always show minutes:seconds format
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
-  return `${minutes.toString()}:${remainingSeconds
-    .toString()
-    .padStart(2, "0")}`;
+  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 };
 
 // Generate detailed reasoning for actions based on context and action type
@@ -1068,7 +1080,7 @@ export default function LegacyChatFeed({
       exit="exit"
     >
       <motion.nav
-        className="flex justify-between items-center px-8 py-4 bg-white border-b border-[#CAC8C7] shadow-sm"
+        className="flex justify-between items-center px-4 pt-4 sm:px-8 sm:py-4 bg-white sm:border-b border-[#CAC8C7] shadow-sm"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -1114,7 +1126,7 @@ export default function LegacyChatFeed({
         ></div>
         <motion.div
           className="w-full max-w-[1600px] bg-white md:border border-[#CAC8C7] shadow-sm overflow-hidden mx-auto relative z-10"
-          style={{ height: isMobile ? "calc(100vh - 80px)" : "auto" }}
+          style={{ height: isMobile ? "calc(100vh - 56px)" : "auto" }}
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
@@ -1158,7 +1170,8 @@ export default function LegacyChatFeed({
                       </div>
                     )}
                   </div>
-                  <div className="mt-3 flex justify-center items-center space-x-2 text-sm text-gray-500">
+                  <div className="mt-3 flex justify-center items-center space-x-1 text-sm text-[#2E191E] ">
+                    <div className="flex flex-row items-center gap-1 bg-[#F6F5F5] px-2 py-1 border border-[#CAC8C7]">
                     <svg
                       className="w-4 h-4"
                       xmlns="http://www.w3.org/2000/svg"
@@ -1172,10 +1185,11 @@ export default function LegacyChatFeed({
                       <circle cx="12" cy="12" r="10" />
                       <polyline points="12 6 12 12 16 14" />
                     </svg>
-                    <div className="font-mono flex items-center">
-                      Session time:{" "}
+                    <div className="flex items-center px-1 py-1 text-sm text-[#2E191E]">
+                      <span className="font-medium">Session time:</span>{" "}
                       <span className="ml-1">{formatTime(sessionTime)}</span>
                     </div>
+                  </div>
                   </div>
                 </motion.div>
               </div>
@@ -1210,34 +1224,57 @@ export default function LegacyChatFeed({
             >
               {/* Pinned Goal Message */}
               {initialMessage && (
-                <div className="bg-white relative">
+                <div className="relative">
+                  {/* Blur effect behind the goal message */}
+                  <div
+                    className="absolute pointer-events-none"
+                    style={{
+                      background: "rgba(245, 240, 255, 0.4)",
+                      filter: "blur(20px)",
+                      width: "130%",
+                      height: "130%",
+                      left: "-15%",
+                      right: "-15%",
+                      top: "-15%",
+                      bottom: "-15%",
+                      zIndex: 1,
+                      borderRadius: "12px",
+                    }}
+                  ></div>
                   <motion.div
                     variants={messageVariants}
                     className={`p-4 font-ppsupply sticky top-0 z-10 w-full ${
                       !isScrolled ? "mb-4" : ""
                     }`}
                     style={{
-                      backgroundColor: "rgba(245, 240, 255, 0.85)",
+                      backgroundColor: "rgba(245, 240, 255, 0.75)",
                       backdropFilter: "blur(8px)",
                       border: "1px solid #CAC8C7",
                       width: "100%",
                       maxWidth: "100%",
                       marginLeft: 0,
                       marginRight: 0,
+                      position: "relative",
+                      zIndex: 2,
                     }}
                   >
                     <div
-                      className="absolute left-0 right-0 -bottom-24 w-full h-24 pointer-events-none"
+                      className="absolute pointer-events-none"
                       style={{
                         background:
                           "linear-gradient(to bottom, rgba(245, 240, 255, 0.85), rgba(245, 240, 255, 0))",
-                        zIndex: 0,
                         opacity: 0.6,
-                        filter: "blur(0.5px)",
+                        filter: "blur(2px)",
+                        width: "150%",
+                        height: "32px",
+                        left: "-25%",
+                        right: "-25%",
+                        bottom: "-24px",
+                        zIndex: 0,
                       }}
                     ></div>
 
-                    <div className="absolute  right-2">
+                    <div className="absolute right-2">
                       <Pin
                         color="#2E191E"
                         size={17}
@@ -1512,7 +1549,12 @@ export default function LegacyChatFeed({
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                     placeholder="Type your message..."
-                    className="flex-1 px-2 sm:px-4 py-2 border border-[#CAC8C7] focus:outline-none focus:ring-2 focus:ring-[#FF3B00] focus:border-transparent font-ppsupply animate-[pulseInput_2s_ease-in-out_infinite] transition-all text-sm sm:text-base"
+                    className="flex-1 px-2 sm:px-4 py-2 border focus:outline-none focus:ring-1 focus:ring-[#FF3B00] focus:border-transparent font-ppsupply animate-[glowingBorder_3s_ease-in-out_infinite] transition-all text-sm sm:text-base"
+                    style={{
+                      // backgroundColor: "rgba(245, 240, 255, 0.75)",
+                      backdropFilter: "blur(8px)",
+                      borderColor: "rgba(255, 59, 0, 0.5)",
+                    }}
                   />
                   <button
                     type="submit"
