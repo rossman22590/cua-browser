@@ -12,7 +12,7 @@ import {
   ComputerCallOutput,
   OutputText,
 } from "../api/cua/agent/types";
-import { SlidingNumber } from "../components/ui/sliding-number";
+// import { SlidingNumber } from "../components/ui/sliding-number";
 import { Pin } from "lucide-react";
 import { SessionControls } from "./SessionControls";
 import BrowserSessionContainer from "./BrowserSessionContainer";
@@ -80,6 +80,7 @@ const generateDetailedReasoning = (
       return `${basicDescription} to interact with the page interface. This helps navigate through the content to find the requested information.`;
 
     case "type":
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const text = action.text || "";
       if (contextClues.goal) {
         return `${basicDescription} to search for specific information about ${contextClues.goal}. Entering these search terms will help retrieve relevant results.`;
@@ -104,9 +105,13 @@ const generateDetailedReasoning = (
       let domain = "";
       try {
         if (action.url) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           domain = new URL(action.url as string).hostname.replace("www.", "");
         }
-      } catch (e) {}
+      } catch (e) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        console.error("Error parsing URL:", e);
+      }
 
       return `${basicDescription} to find information about ${
         contextClues.goal || "the requested topic"
@@ -166,6 +171,7 @@ export default function LegacyChatFeed({
   initialMessage,
   onClose,
 }: ChatFeedProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isLoading, setIsLoading] = useState(false);
   const [sessionTime, setSessionTime] = useState(0);
   const { width } = useWindowSize();
@@ -173,6 +179,7 @@ export default function LegacyChatFeed({
   const initializationRef = useRef(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isMounted, setIsMounted] = useState(false);
   const [isAgentFinished, setIsAgentFinished] = useState(false);
   const agentStateRef = useRef<AgentState>({
@@ -273,15 +280,19 @@ export default function LegacyChatFeed({
   // Watch for isAgentFinished state changes to terminate the session when stop button is clicked
   useEffect(() => {
     if (isAgentFinished && uiState.sessionId) {
-      console.log("Terminating session due to agent finished state:", uiState.sessionId);
-      
+      console.log(
+        "Terminating session due to agent finished state:",
+        uiState.sessionId
+      );
+
       // Set a flag to prevent further API calls
       const abortController = new AbortController();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const signal = abortController.signal;
-      
+
       // Cancel any pending requests
       abortController.abort();
-      
+
       // Wait a short delay to allow any in-progress operations to complete
       setTimeout(() => {
         fetch("/api/session", {
@@ -292,9 +303,12 @@ export default function LegacyChatFeed({
           body: JSON.stringify({
             sessionId: uiState.sessionId,
           }),
-        }).catch(error => {
+        }).catch((error) => {
           // Ignore errors during session termination
-          console.log("Error during session termination (can be ignored):", error);
+          console.log(
+            "Error during session termination (can be ignored):",
+            error
+          );
         });
       }, 500);
     }
@@ -518,8 +532,9 @@ export default function LegacyChatFeed({
         if (actionType === "goto" && typeof action.url === "string") {
           try {
             domain = new URL(action.url).hostname.replace("www.", "");
-          } catch (e) {
+          } catch (e: unknown) {
             // If URL parsing fails, just use the default
+            console.error("Error parsing URL:", e);
           }
         }
 
@@ -1295,7 +1310,9 @@ export default function LegacyChatFeed({
           <span className="flex items-center text-[#10100D] ">
             Close
             {!isMobile && (
-              <kbd className="px-2 text-sm bg-gray-100 ml-2 border border-[#CAC8C7]">ESC</kbd>
+              <kbd className="px-2 text-sm bg-gray-100 ml-2 border border-[#CAC8C7]">
+                ESC
+              </kbd>
             )}
           </span>
         </motion.button>
@@ -1502,6 +1519,7 @@ export default function LegacyChatFeed({
                                 const questionText = questions.join(" ").trim();
 
                                 // Check if the entire message is just a question
+                                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                 const isOnlyQuestion =
                                   step.text.trim() === questionText;
 
@@ -1624,6 +1642,7 @@ export default function LegacyChatFeed({
                       const questionText = questions.join(" ").trim();
 
                       // Check if the entire message is just a question
+                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
                       const isOnlyQuestion =
                         lastStep.text.trim() === questionText;
 
