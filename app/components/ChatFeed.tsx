@@ -1288,14 +1288,16 @@ export default function LegacyChatFeed({
         </div>
         <motion.button
           onClick={onClose}
-          className="px-4 py-2 hover:bg-gray-100 text-gray-600 hover:text-gray-900 rounded-md font-ppsupply animate-[pulseInput_2s_ease-in-out_infinite] transition-all"
+          className="px-4 py-2 hover:bg-gray-100 text-gray-600 hover:text-gray-900 font-ppsupply animate-[pulseInput_2s_ease-in-out_infinite] transition-all bg-[#F6F5F5] border border-[#CAC8C7]"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
-          Close
-          {!isMobile && (
-            <kbd className="px-2 py-1 text-xs bg-gray-100 rounded-md">ESC</kbd>
-          )}
+          <span className="flex items-center text-[#10100D] ">
+            Close
+            {!isMobile && (
+              <kbd className="px-2 text-sm bg-gray-100 ml-2 border border-[#CAC8C7]">ESC</kbd>
+            )}
+          </span>
         </motion.button>
       </motion.nav>
       <main
