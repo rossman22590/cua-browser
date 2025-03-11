@@ -1342,6 +1342,7 @@ export default function LegacyChatFeed({
           <div className="flex flex-col md:flex-row h-full overflow-hidden">
             <div className="w-full md:flex-[2] p-4 md:p-6 md:border-l border-[#CAC8C7] order-first md:order-last flex flex-col items-center justify-center sticky top-0 z-20 bg-white">
               <BrowserSessionContainer
+                sessionId={uiState.sessionId}
                 sessionUrl={uiState.sessionUrl}
                 isVisible={true}
                 isCompleted={isAgentFinished}
