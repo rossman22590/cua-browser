@@ -3,11 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SessionControls } from "./SessionControls";
-import BrowserTabs from "./BrowserTabs";
-import { SessionLiveURLs } from "@browserbasehq/sdk/resources/index.mjs";
 
 interface BrowserSessionContainerProps {
-  sessionId: string | null;
   sessionUrl: string | null;
   isVisible: boolean;
   isCompleted: boolean;
@@ -100,7 +97,6 @@ const rightCurtainVariants = {
 };
 
 const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
-  sessionId,
   sessionUrl,
   isVisible,
   isCompleted,
@@ -112,9 +108,6 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
   const [curtainState, setCurtainState] = useState<
     "closed" | "opening" | "open" | "closing"
   >("closed");
-  const [activePage, setActivePage] = useState<SessionLiveURLs.Page | null>(
-    null
-  );
 
   // Handle curtain animation based on session state
   useEffect(() => {
@@ -146,7 +139,7 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
     <AnimatePresence mode="wait">
       {isVisible && (
         <motion.div
-          className="w-full h-full max-w-[1000px] mx-auto flex flex-col gap-y-2 md:justify-center"
+          className="w-full max-w-[1000px] mx-auto flex flex-col md:justify-center"
           style={{ minHeight: "auto" }}
           variants={containerVariants}
           initial="hidden"
@@ -154,15 +147,6 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
           exit="exit"
           key={isCompleted ? "completed" : "active"}
         >
-          {/* Tabs */}
-          {!isCompleted && sessionId && (
-            <BrowserTabs
-              sessionId={sessionId}
-              activePage={activePage}
-              setActivePage={setActivePage}
-            />
-          )}
-
           {/* Browser frame */}
           <div
             className="w-full h-[250px] md:h-[600px] flex items-center justify-center overflow-hidden border border-[#CAC8C7] shadow-sm relative"

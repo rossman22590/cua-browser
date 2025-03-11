@@ -3,6 +3,7 @@ import { SessionLiveURLs } from "@browserbasehq/sdk/resources/index.mjs";
 import { useEffect, useState } from "react";
 
 let abortController: AbortController | null = null;
+let errors = 0;
 async function getPages(sessionId: string) {
   try {
     // abort any previous requests
@@ -13,9 +14,25 @@ async function getPages(sessionId: string) {
     const res = await fetch(`/api/session/${sessionId}/pages`, {
       signal: abortController.signal,
     });
+
+    // retry 3 times if the request fails
+    if (!res.ok) {
+      errors++;
+      if (errors > 3) {
+        throw new Error("Failed to fetch pages");
+      }
+      return [];
+    }
+
     const data = await res.json();
+    errors = 0;
     return data.pages;
-  } catch (error) {
+  } catch (error: unknown) {
+    // abort error is expected when the request is aborted
+    if (error instanceof Error && error.name === "AbortError") {
+      return [];
+    }
+
     console.error("Error fetching pages:", error);
     return [];
   }
@@ -53,17 +70,22 @@ export default function BrowserTabs({
     }
   }, [activePage, pages, setActivePage]);
 
-  console.log(pages, activePage);
-
   if (pages.length === 0 || !activePage) {
+    return null;
+  }
+
+  const tabLoading = !Boolean(activePage.title || activePage.url);
+
+  // hide tabs if there is only one page
+  if (pages.length < 2) {
     return null;
   }
 
   return (
     <div
-      className="grid gap-2"
+      className="grid gap-2 w-full justify-start"
       style={{
-        gridTemplateColumns: `repeat(${pages.length}, 1fr)`,
+        gridTemplateColumns: `repeat(${pages.length}, minmax(100px,300px))`,
       }}
     >
       {pages.map((page) => (
@@ -71,9 +93,9 @@ export default function BrowserTabs({
           key={page.id}
           onClick={() => setActivePage(page)}
           className={cn(
-            "bg-[rgb(248,248,255)] rounded-[1px] border border-[rgb(230,225,240)] text-sm flex gap-x-1 p-1 max-w-[300px] truncate whitespace-nowrap cursor-pointer hover:border-gray-400",
+            "bg-[rgb(248,248,255)] rounded-[2px] text-gray-500 border border-[rgb(230,225,240)] text-sm flex gap-x-1 py-1 px-1.5 max-w-[300px] cursor-pointer hover:border-gray-400",
             {
-              "bg-[rgb(245,240,255)]": page.id === activePage?.id,
+              "bg-[rgb(245,240,255)] text-gray-800": page.id === activePage?.id,
             }
           )}
         >
@@ -81,7 +103,13 @@ export default function BrowserTabs({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={page.faviconUrl} alt={page.title} className="size-3" />
           )}
-          {page.title || page.url}
+          {tabLoading ? (
+            <span className="text-gray-400 animate-pulse">Loading...</span>
+          ) : (
+            <span className="truncate text-ellipsis whitespace-nowrap">
+              {page.title || page.url}
+            </span>
+          )}
         </div>
       ))}
     </div>
