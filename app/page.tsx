@@ -120,7 +120,7 @@ export default function Home() {
           <nav className="flex justify-between items-center px-8 py-4 bg-white border-b border-[#CAC8C7] z-10">
             <div className="flex items-center gap-3">
               <a
-                href="https://www.browserbase.com"
+                href="https://www.browserbase.com/computer-use"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 hover:opacity-90 transition-opacity duration-200"
@@ -139,7 +139,7 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2">
               <a
-                href="https://browserbase.com/computer-use"
+                href="https://www.browserbase.com/computer-use"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -193,7 +193,7 @@ export default function Home() {
               <div className="p-8 md:p-10 lg:p-12 flex flex-col items-center gap-8 md:gap-10">
                 <div className="flex flex-col items-center gap-3 md:gap-5">
                   <h1 className="text-2xl md:text-3xl lg:text-4xl font-ppneue text-gray-900 text-center">
-                    CUA Browser
+                    Computer Use Browser
                   </h1>
                   <p className="text-base md:text-lg font-ppsupply text-gray-500 text-center">
                     Hit run to watch AI browse the web.
@@ -244,7 +244,7 @@ export default function Home() {
                     }
                     className="p-3 md:p-5 lg:p-6 text-sm md:text-base lg:text-xl text-[#2E191E] border border-[#CAC8C7] hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply font-medium text-center overflow-hidden text-ellipsis break-words whitespace-normal md:min-h-[100px] lg:min-h-[120px] flex items-center justify-center backdrop-blur-sm bg-opacity-60 bg-[rgba(245,240,255,0.15)] hover:bg-[rgba(255,59,0,0.05)] rounded-none"
                   >
-                    <div className="w-full h-full flex flex-col justify-between items-start px-3 py-2 md:px-4 md:py-3 space-y-3">
+                    <div className="w-full h-full flex flex-row justify-between items-start px-3 py-2 md:px-4 md:py-3 space-y-3">
                       <span className="text-left">Review a pull request<br />on Github</span>
                       <Code className="" size={20} strokeWidth={1.5} />
                     </div>
@@ -262,7 +262,7 @@ export default function Home() {
                     }
                     className="p-3 md:p-5 lg:p-6 text-sm md:text-base lg:text-xl text-[#2E191E] border border-[#CAC8C7] hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply font-medium text-center overflow-hidden text-ellipsis break-words whitespace-normal md:min-h-[100px] lg:min-h-[120px] flex items-center justify-center backdrop-blur-sm bg-opacity-60 bg-[rgba(245,240,255,0.15)] hover:bg-[rgba(255,59,0,0.05)] rounded-none"
                   >
-                    <div className="w-full h-full flex flex-col justify-between items-start px-3 py-2 md:px-4 md:py-3 space-y-3">
+                    <div className="w-full h-full flex flex-row justify-between items-start px-3 py-2 md:px-4 md:py-3">
                       <span className="text-left">Play a challenging<br />game of 2048</span>
                       <Gamepad2 size={20} strokeWidth={1.5} className="rounded-none" />
                     </div>
@@ -278,7 +278,7 @@ export default function Home() {
                     }
                     className="p-3 md:p-5 lg:p-6 text-sm md:text-base lg:text-xl text-[#2E191E] border border-[#CAC8C7] hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply font-medium text-center overflow-hidden text-ellipsis break-words whitespace-normal md:min-h-[100px] lg:min-h-[120px] flex items-center justify-center backdrop-blur-sm bg-opacity-60 bg-[rgba(245,240,255,0.15)] hover:bg-[rgba(255,59,0,0.05)] rounded-none"
                   >
-                    <div className="w-full h-full flex flex-col justify-between items-start px-3 py-2 md:px-4 md:py-3 space-y-3">
+                    <div className="w-full h-full flex flex-row justify-between items-start px-3 py-2 md:px-4 md:py-3 space-y-3">
                       <span className="text-left">Analyze a<br />spreadsheet</span>
                       <Table size={20} strokeWidth={1.5} className="rounded-none" />
                     </div>
@@ -290,7 +290,7 @@ export default function Home() {
                     onClick={() => startChat("How much is NVIDIA stock?")}
                     className="p-3 md:p-5 lg:p-6 text-sm md:text-base lg:text-xl text-[#2E191E] border border-[#CAC8C7] hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply font-medium text-center overflow-hidden text-ellipsis break-words whitespace-normal md:min-h-[100px] lg:min-h-[120px] flex items-center justify-center backdrop-blur-sm bg-opacity-60 bg-[rgba(245,240,255,0.15)] hover:bg-[rgba(255,59,0,0.05)] rounded-none"
                   >
-                    <div className="w-full h-full flex flex-col justify-between items-start px-3 py-2 md:px-4 md:py-3 space-y-3">
+                    <div className="w-full h-full flex flex-row justify-between items-start px-3 py-2 md:px-4 md:py-3 space-y-3">
                       <span className="text-left">Check the price<br />of NVIDIA stock</span>
                       <TrendingUp size={20} strokeWidth={1.5} className="rounded-none" />
                     </div>

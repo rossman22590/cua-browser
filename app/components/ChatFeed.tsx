@@ -1306,7 +1306,7 @@ export default function LegacyChatFeed({
       >
         <div className="flex items-center gap-2">
           <a
-            href="https://www.browserbase.com"
+            href="https://browserbase.com/computer-use"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-3 hover:opacity-90 transition-opacity duration-200"
