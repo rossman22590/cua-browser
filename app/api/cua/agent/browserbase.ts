@@ -121,36 +121,53 @@ export class BrowserbaseBrowser extends BasePlaywrightComputer {
     const pages = context.pages();
     const page = pages[pages.length - 1];
 
-    page.evaluate(() => {
-      const CURSOR_ID = '__cursor__';
+    context
+      .addInitScript(() => {
+        // Only run in the top frame
+        if (window.self === window.top) {
+          function initCursor() {
+            const CURSOR_ID = "__cursor__";
 
-      // Check if cursor element already exists
-      if (document.getElementById(CURSOR_ID)) return;
+            // Check if cursor element already exists
+            if (document.getElementById(CURSOR_ID)) return;
 
-      const cursor = document.createElement('div');
-      cursor.id = CURSOR_ID;
-      Object.assign(cursor.style, {
-        position: 'absolute',
-        top: '0px',
-        left: '0px',
-        width: '20px',
-        height: '20px',
-        backgroundImage: 'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'black\' stroke=\'white\' stroke-width=\'1\' stroke-linejoin=\'round\' stroke-linecap=\'round\'><polygon points=\'2,2 2,22 8,16 14,22 17,19 11,13 20,13\'/></svg>")',
-        backgroundSize: 'cover',
-        pointerEvents: 'none',
-        zIndex: '99999',
-        transform: 'translate(-2px, -2px)',
+            const cursor = document.createElement("div");
+            cursor.id = CURSOR_ID;
+            Object.assign(cursor.style, {
+              position: "absolute",
+              top: "0px",
+              left: "0px",
+              width: "20px",
+              height: "20px",
+              backgroundImage:
+                "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black' stroke='white' stroke-width='1' stroke-linejoin='round' stroke-linecap='round'><polygon points='2,2 2,22 8,16 14,22 17,19 11,13 20,13'/></svg>\")",
+              backgroundSize: "cover",
+              pointerEvents: "none",
+              zIndex: "99999",
+              transform: "translate(-2px, -2px)",
+            });
+
+            document.body.appendChild(cursor);
+
+            document.addEventListener("mousemove", (e) => {
+              cursor.style.top = e.clientY + "px";
+              cursor.style.left = e.clientX + "px";
+            });
+          }
+
+          // Use requestAnimationFrame for early execution
+          requestAnimationFrame(function checkBody() {
+            if (document.body) {
+              initCursor();
+            } else {
+              requestAnimationFrame(checkBody);
+            }
+          });
+        }
+      })
+      .catch((error) => {
+        console.error("Error injecting cursor-rendering script:", error);
       });
-  
-      document.body.appendChild(cursor);
-
-      document.addEventListener("mousemove", (e) => {
-        cursor.style.top = `${e.clientY}px`;
-        cursor.style.left = `${e.clientX}px`;
-      });
-    }).catch((error) => {
-      console.error("Error injecting cursor-rendering script:", error);
-    });
 
     // Only navigate to Google if it's a new session
     if (!this.sessionId) {

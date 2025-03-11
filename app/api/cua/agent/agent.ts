@@ -131,20 +131,6 @@ export class Agent {
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError;
-      
-      // If it's a 500 error, try again without non-computer-preview tools
-      if (axiosError.response?.status === 500 && options.tools) {
-        const filteredTools = options.tools.filter(tool => tool.type === 'computer-preview');
-        const retryOptions = { ...options, tools: filteredTools };
-        
-        try {
-          const retryResponse = await axios.post(url, retryOptions, { headers });
-          return retryResponse.data;
-        } catch (retryError) {
-          console.error(`Retry Error: ${retryError}`);
-          throw retryError;
-        }
-      }
 
       console.error(`Error: ${axiosError.response?.status} ${axiosError.response?.data || axiosError.message}`);
       console.error(`${JSON.stringify(axiosError.response?.data)}`);
