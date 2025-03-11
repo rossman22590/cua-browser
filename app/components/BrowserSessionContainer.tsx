@@ -139,7 +139,7 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
     <AnimatePresence mode="wait">
       {isVisible && (
         <motion.div
-          className="w-full h-full max-w-[1000px] mx-auto flex flex-col md:justify-center"
+          className="w-full max-w-[1000px] mx-auto flex flex-col md:justify-center"
           style={{ minHeight: "auto" }}
           variants={containerVariants}
           initial="hidden"
@@ -147,6 +147,7 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
           exit="exit"
           key={isCompleted ? "completed" : "active"}
         >
+          {/* Browser frame */}
           <div
             className="w-full h-[250px] md:h-[600px] flex items-center justify-center overflow-hidden border border-[#CAC8C7] shadow-sm relative"
             style={{
@@ -188,7 +189,7 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
               sessionUrl ? (
                 <iframe
                   src={sessionUrl}
-                  className="w-full h-full"
+                  className="w-full h-full border-none"
                   sandbox="allow-same-origin allow-scripts allow-forms"
                   allow="clipboard-read; clipboard-write"
                   loading="lazy"

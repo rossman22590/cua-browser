@@ -16,6 +16,8 @@ import {
 import { Layers, Pin } from "lucide-react";
 import { SessionControls } from "./SessionControls";
 import BrowserSessionContainer from "./BrowserSessionContainer";
+import { SessionLiveURLs } from "@browserbasehq/sdk/resources/index.mjs";
+import BrowserTabs from "./BrowserTabs";
 
 interface ChatFeedProps {
   initialMessage?: string;
@@ -171,6 +173,9 @@ export default function LegacyChatFeed({
   initialMessage,
   onClose,
 }: ChatFeedProps) {
+  const [activePage, setActivePage] = useState<SessionLiveURLs.Page | null>(
+    null
+  );
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isLoading, setIsLoading] = useState(false);
   const [sessionTime, setSessionTime] = useState(0);
@@ -201,6 +206,16 @@ export default function LegacyChatFeed({
     connectUrl: null,
     steps: [],
   });
+
+  // generate the debugger URL for the current tab
+  const activePageUrl = (
+    activePage?.debuggerFullscreenUrl ??
+    uiState.sessionUrl ??
+    ""
+  ).replace(
+    "https://www.browserbase.com/devtools-fullscreen/inspector.html",
+    "https://www.browserbase.com/devtools-internal-compiled/index.html"
+  );
 
   const [userInput, setUserInput] = useState("");
   const [isWaitingForInput, setIsWaitingForInput] = useState(false);
@@ -893,15 +908,21 @@ export default function LegacyChatFeed({
           }),
         });
 
-        const responseData = await nextStepResponse.json();
+        // abort here if generate fails
+        if (!nextStepResponse.ok) {
+          console.error("API error:", nextStepResponse);
+          return;
+        }
 
-        // Ensure nextStepData is always an array
-        const nextStepData = Array.isArray(responseData) ? responseData : [];
+        const responseData = await nextStepResponse.json();
 
         // Log error if we got an invalid response
         if (!Array.isArray(responseData)) {
           console.error("API returned non-array data:", responseData);
         }
+
+        // Ensure nextStepData is always an array
+        const nextStepData = Array.isArray(responseData) ? responseData : [];
 
         // Handle reasoning-only responses by adding a message item if needed
         if (
@@ -1178,19 +1199,13 @@ export default function LegacyChatFeed({
           agentStateRef.current = {
             ...agentStateRef.current,
             sessionId: sessionData.sessionId,
-            sessionUrl: sessionData.sessionUrl.replace(
-              "https://www.browserbase.com/devtools-fullscreen/inspector.html",
-              "https://www.browserbase.com/devtools-internal-compiled/index.html"
-            ),
+            sessionUrl: sessionData.sessionUrl,
             connectUrl: sessionData.connectUrl,
           };
 
           setUiState({
             sessionId: sessionData.sessionId,
-            sessionUrl: sessionData.sessionUrl.replace(
-              "https://www.browserbase.com/devtools-fullscreen/inspector.html",
-              "https://www.browserbase.com/devtools-internal-compiled/index.html"
-            ),
+            sessionUrl: sessionData.sessionUrl,
             connectUrl: sessionData.connectUrl,
             steps: [],
           });
@@ -1366,9 +1381,18 @@ export default function LegacyChatFeed({
           transition={{ delay: 0.3 }}
         >
           <div className="flex flex-col md:flex-row h-full overflow-hidden">
-            <div className="w-full md:flex-[2] p-4 md:p-6 md:border-l border-[#CAC8C7] order-first md:order-last flex flex-col items-center justify-center sticky top-0 z-20 bg-white">
+            <div className="w-full md:flex-[2] gap-y-2 p-4 md:p-6 md:border-l border-[#CAC8C7] order-first md:order-last flex flex-col items-center justify-center sticky top-0 z-20 bg-white">
+              {/* Tabs */}
+              {!isAgentFinished && uiState.sessionId && (
+                <BrowserTabs
+                  sessionId={uiState.sessionId}
+                  activePage={activePage}
+                  setActivePage={setActivePage}
+                />
+              )}
+
               <BrowserSessionContainer
-                sessionUrl={uiState.sessionUrl}
+                sessionUrl={activePageUrl}
                 isVisible={true}
                 isCompleted={isAgentFinished}
                 initialMessage={initialMessage}
