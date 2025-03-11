@@ -29,7 +29,10 @@ async function getPages(sessionId: string) {
     return data.pages;
   } catch (error: unknown) {
     // abort error is expected when the request is aborted
-    if (error instanceof Error && error.name === "AbortError") {
+    if (
+      (error instanceof Error && error.name === "AbortError") ||
+      error === "Aborted previous request"
+    ) {
       return [];
     }
 
