@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       await computer.connect();
 
       // Check if userInput contains a URL and navigate to it
-      const urlPattern = /(https?:\/\/[^\s]+)/;
+      const urlPattern = /(https?:\/\/[^\s]+)|(?:^|\s)([a-zA-Z0-9-]+\.(?:com|org|edu|gov|net|io|ai|app|dev|co|me|info|biz)\b)/;
       const urlMatch = userInput.match(urlPattern);
 
       const initialMessages: InputItem[] = [

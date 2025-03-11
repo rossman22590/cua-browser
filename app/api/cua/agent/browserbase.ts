@@ -3,6 +3,7 @@ import { Browser, Page, chromium } from "playwright";
 import { BasePlaywrightComputer } from "./base_playwright";
 import Browserbase from "@browserbasehq/sdk";
 import { SessionCreateResponse } from "@browserbasehq/sdk/resources/sessions/sessions.mjs";
+import axios from "axios";
 
 dotenv.config();
 
@@ -75,12 +76,17 @@ export class BrowserbaseBrowser extends BasePlaywrightComputer {
      * @returns A tuple containing the connected browser and page objects.
      */
     if (this.sessionId) {
-      // Connect to an existing session
-      console.log(`Connecting to existing session: ${this.sessionId}`);
-      // TODO: replace with this when we ship connectUrl to the session retrieve endpoint
-      // this.session = await this.bb.sessions.retrieve(this.sessionId) as unknown as BrowserbaseSession;
+      // TODO: replace with this when we ship connectUrl via session GET to the SDK
+      const response = await axios.get(
+        `https://api.browserbase.com/v1/sessions/${this.sessionId}`,
+        {
+          headers: {
+            "X-BB-API-Key": process.env.BROWSERBASE_API_KEY,
+          },
+        }
+      );
       this.session = {
-        connectUrl: `wss://connect.browserbase.com?apiKey=${process.env.BROWSERBASE_API_KEY}&sessionId=${this.sessionId}`,
+        connectUrl: response.data.connectUrl,
       } as unknown as BrowserbaseSession;
     } else {
       // Create a new session on Browserbase with specified parameters
