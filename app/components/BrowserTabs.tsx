@@ -56,15 +56,20 @@ export default function BrowserTabs({
 
   useEffect(() => {
     const refetchPages = async () => {
-      const pages = await getPages(sessionId);
-      setPages(pages);
+      const p = await getPages(sessionId);
+      // when a new page is added, set the active page to the last page
+      if (p.length > pages.length) {
+        setActivePage(p[p.length - 1]);
+      }
+
+      setPages(p);
     };
 
     refetchPages();
     const interval = setInterval(refetchPages, refetchInterval);
 
     return () => clearInterval(interval);
-  }, [sessionId]);
+  }, [pages.length, sessionId, setActivePage]);
 
   // fallback to first page if activePageId is not found
   useEffect(() => {
