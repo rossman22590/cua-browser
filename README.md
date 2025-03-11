@@ -8,12 +8,12 @@
 
 ## Getting Started
 
-First, install the dependencies for this repository. This requires [pnpm](https://pnpm.io/installation#using-other-package-managers).
+First, install the dependencies for this repository. This requires npm
 
 <!-- This doesn't work with NPM, haven't tested with yarn -->
 
 ```bash
-pnpm install
+npm install
 ```
 
 Next, copy the example environment variables:
@@ -38,7 +38,7 @@ Then, run the development server:
 <!-- This doesn't work with NPM, haven't tested with yarn -->
 
 ```bash
-pnpm dev
+npm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see CUA Browser in action.
