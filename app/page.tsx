@@ -6,6 +6,7 @@ import AnimatedButton from "./components/AnimatedButton";
 import Image from "next/image";
 import posthog from "posthog-js";
 import ChatFeed from "./components/ChatFeed";
+import { Code, Gamepad2, Table, TrendingUp } from "lucide-react";
 
 const Tooltip = ({
   children,
@@ -213,19 +214,27 @@ export default function Home() {
                         "Find the most recently opened non-draft PR on Github for Browserbase's Stagehand project and make sure the combination-evals in the PR validation passed."
                       )
                     }
-                    className="p-3 md:p-4 lg:p-6 text-sm md:text-base lg:text-xl text-[#2E191E] border border-[#CAC8C7] hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply font-medium text-center overflow-hidden text-ellipsis break-words whitespace-normal md:min-h-[100px] lg:min-h-[120px] flex items-center justify-center backdrop-blur-sm bg-opacity-60 bg-[rgba(245,240,255,0.15)] hover:bg-[rgba(255,59,0,0.05)]"
+                    className="p-3 md:p-5 lg:p-6 text-sm md:text-base lg:text-xl text-[#2E191E] border border-[#CAC8C7] hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply font-medium text-center overflow-hidden text-ellipsis break-words whitespace-normal md:min-h-[100px] lg:min-h-[120px] flex items-center justify-center backdrop-blur-sm bg-opacity-60 bg-[rgba(245,240,255,0.15)] hover:bg-[rgba(255,59,0,0.05)] rounded-none"
                   >
-                    <span className="w-full px-2">Review a pull request<br />on Github</span>
+                    <div className="w-full h-full flex flex-col justify-between items-start px-3 py-2 md:px-4 md:py-3 space-y-3">
+                      <span className="text-left">Review a pull request<br />on Github</span>
+                      <Code className="" size={20} strokeWidth={1.5} />
+                    </div>
+                  
                   </button>
+                  
                   <button
                     onClick={() =>
                       startChat(
                         "Play a game of 2048 on https://www.2048.org/. Just try to win and I'll watch. Good luck!"
                       )
                     }
-                    className="p-3 md:p-4 lg:p-6 text-sm md:text-base lg:text-xl text-[#2E191E] border border-[#CAC8C7] hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply font-medium text-center overflow-hidden text-ellipsis break-words whitespace-normal md:min-h-[100px] lg:min-h-[120px] flex items-center justify-center backdrop-blur-sm bg-opacity-60 bg-[rgba(245,240,255,0.15)] hover:bg-[rgba(255,59,0,0.05)]"
+                    className="p-3 md:p-5 lg:p-6 text-sm md:text-base lg:text-xl text-[#2E191E] border border-[#CAC8C7] hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply font-medium text-center overflow-hidden text-ellipsis break-words whitespace-normal md:min-h-[100px] lg:min-h-[120px] flex items-center justify-center backdrop-blur-sm bg-opacity-60 bg-[rgba(245,240,255,0.15)] hover:bg-[rgba(255,59,0,0.05)] rounded-none"
                   >
-                    <span className="w-full px-2">Play a challenging<br />game of 2048</span>
+                    <div className="w-full h-full flex flex-col justify-between items-start px-3 py-2 md:px-4 md:py-3 space-y-3">
+                      <span className="text-left">Play a challenging<br />game of 2048</span>
+                      <Gamepad2 size={20} strokeWidth={1.5} className="rounded-none" />
+                    </div>
                   </button>
                   <button
                     onClick={() =>
@@ -233,15 +242,21 @@ export default function Home() {
                         "Please visit https://docs.google.com/spreadsheets/d/16fFgY7y4B2AnZLLFx4ajbBh-cuaXE-PU2ldQx-H-CcA/edit?gid=0#gid=0 and add a new chart to show the breakdown of gender in the data."
                       )
                     }
-                    className="p-3 md:p-4 lg:p-6 text-sm md:text-base lg:text-xl text-[#2E191E] border border-[#CAC8C7] hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply font-medium text-center overflow-hidden text-ellipsis break-words whitespace-normal md:min-h-[100px] lg:min-h-[120px] flex items-center justify-center backdrop-blur-sm bg-opacity-60 bg-[rgba(245,240,255,0.15)] hover:bg-[rgba(255,59,0,0.05)]"
+                    className="p-3 md:p-5 lg:p-6 text-sm md:text-base lg:text-xl text-[#2E191E] border border-[#CAC8C7] hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply font-medium text-center overflow-hidden text-ellipsis break-words whitespace-normal md:min-h-[100px] lg:min-h-[120px] flex items-center justify-center backdrop-blur-sm bg-opacity-60 bg-[rgba(245,240,255,0.15)] hover:bg-[rgba(255,59,0,0.05)] rounded-none"
                   >
-                    <span className="w-full px-2">Analyze a<br />spreadsheet</span>
+                    <div className="w-full h-full flex flex-col justify-between items-start px-3 py-2 md:px-4 md:py-3 space-y-3">
+                      <span className="text-left">Analyze a<br />spreadsheet</span>
+                      <Table size={20} strokeWidth={1.5} className="rounded-none" />
+                    </div>
                   </button>
                   <button
                     onClick={() => startChat("How much is NVIDIA stock?")}
-                    className="p-3 md:p-4 lg:p-6 text-sm md:text-base lg:text-xl text-[#2E191E] border border-[#CAC8C7] hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply font-medium text-center overflow-hidden text-ellipsis break-words whitespace-normal md:min-h-[100px] lg:min-h-[120px] flex items-center justify-center backdrop-blur-sm bg-opacity-60 bg-[rgba(245,240,255,0.15)] hover:bg-[rgba(255,59,0,0.05)]"
+                    className="p-3 md:p-5 lg:p-6 text-sm md:text-base lg:text-xl text-[#2E191E] border border-[#CAC8C7] hover:border-[#FF3B00] hover:text-[#FF3B00] transition-colors font-ppsupply font-medium text-center overflow-hidden text-ellipsis break-words whitespace-normal md:min-h-[100px] lg:min-h-[120px] flex items-center justify-center backdrop-blur-sm bg-opacity-60 bg-[rgba(245,240,255,0.15)] hover:bg-[rgba(255,59,0,0.05)] rounded-none"
                   >
-                    <span className="w-full px-2">Check the price<br />of NVIDIA stock</span>
+                    <div className="w-full h-full flex flex-col justify-between items-start px-3 py-2 md:px-4 md:py-3 space-y-3">
+                      <span className="text-left">Check the price<br />of NVIDIA stock</span>
+                      <TrendingUp size={20} strokeWidth={1.5} className="rounded-none" />
+                    </div>
                   </button>
                 </div>
               </div>
