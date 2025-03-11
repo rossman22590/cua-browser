@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import AnimatedButton from "./components/AnimatedButton";
 import Image from "next/image";
@@ -49,6 +49,7 @@ const Tooltip = ({
 export default function Home() {
   const [isChatVisible, setIsChatVisible] = useState(false);
   const [initialMessage, setInitialMessage] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -191,6 +192,7 @@ export default function Home() {
                 >
                   <div className="relative w-full">
                     <input
+                      ref={inputRef}
                       name="message"
                       type="text"
                       placeholder="What's the price of NVIDIA stock?"
@@ -276,6 +278,12 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 1.0 }}
                   className="text-center text-xs text-gray-500"
+                  onAnimationComplete={() => {
+                    // Focus the input field after the last animation completes
+                    setTimeout(() => {
+                      inputRef.current?.focus();
+                    }, 100);
+                  }}
                 >
                   <p>Or type your own request</p>
                 </motion.div>
