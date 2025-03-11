@@ -139,7 +139,7 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2">
               <a
-                href="https://browserbase-git-nosajio-cua-page-browserbase-com.vercel.app/computer-use/"
+                href="https://browserbase.com/computer-use"
                 target="_blank"
                 rel="noopener noreferrer"
               >
