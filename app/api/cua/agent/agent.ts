@@ -27,7 +27,7 @@ export class Agent {
   public lastResponseId: string | undefined = undefined;
 
   constructor(
-    model: string = "computer-use-preview-2025-02-04",
+    model: string = "computer-use-preview",
     computer: BrowserbaseBrowser,
     acknowledgeSafetyCheckCallback: AcknowledgeSafetyCheckCallback = () => true
   ) {

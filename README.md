@@ -66,7 +66,7 @@ async function main() {
 
   // Initialize the agent
   const agent = new Agent(
-    "computer-use-preview-2025-02-04",
+    "computer-use-preview",
     browser,
     (message) => {
       console.log(`Safety check: ${message}`);
