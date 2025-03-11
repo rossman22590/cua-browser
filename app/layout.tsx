@@ -15,10 +15,10 @@ const ppNeue = localFont({
   variable: "--font-pp-neue",
 });
 
-const ppSupply = localFont({
-  src: "../fonts/PPSupplySans-Regular.otf",
-  variable: "--font-pp-supply",
-});
+// const ppSupply = localFont({
+//   src: "../fonts/PPSupplySans-Regular.otf",
+//   variable: "--font-pp-supply",
+// });
 
 export const metadata: Metadata = {
   title: "CUA Browser",
@@ -50,7 +50,7 @@ export default function RootLayout({
         <link rel="alternate icon" href="/favicon.ico" />
       </head>
       <body
-        className={`${inter.variable} ${ppNeue.variable} ${ppSupply.variable} font-sans antialiased bg-white text-gray-900`}
+        className={`${inter.variable} ${ppNeue.variable} font-sans antialiased bg-white text-gray-900`}
       >
         <PostHogProvider>{children}</PostHogProvider>
         <Analytics />
