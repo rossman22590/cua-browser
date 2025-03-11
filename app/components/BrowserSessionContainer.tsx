@@ -207,7 +207,7 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
                     </h2>
                     <div className="flex flex-col items-center space-y-4 w-full animate-in fade-in duration-700 delay-500">
                       <div className="mt-4 flex justify-center">
-                        <div className="rounded-full bg-gray-200 h-16 w-16 animate-pulse"></div>
+                        <div className=" bg-gray-200 h-16 w-16 animate-pulse"></div>
                       </div>
                     </div>
                   </div>
@@ -219,7 +219,7 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
             <AnimatePresence>
               {isCompleted && (
                 <motion.div
-                  className="absolute inset-0 z-20 flex flex-col items-center justify-center p-4 md:p-8"
+                  className="absolute inset-0 z-20 flex flex-col items-center justify-center p-3 md:p-8"
                   style={{
                     backdropFilter: "blur(3px)",
                     backgroundColor: "rgba(46, 25, 30, 0.2)",
@@ -230,22 +230,22 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
                   transition={{ duration: 0.5 }}
                 >
                   <motion.div
-                    className="flex flex-col items-center space-y-4 md:space-y-6 w-full max-w-[90%] md:max-w-[80%] text-center"
+                    className="flex flex-col items-center space-y-3 md:space-y-6 w-full max-w-[95%] md:max-w-[80%] text-center bg-[rgba(46,25,30,0.7)] p-4 rounded-lg backdrop-blur-sm"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.6, delay: 0.2 }}
                   >
                     <motion.span
-                      className="text-xl md:text-3xl font-semibold text-white"
+                      className="text-lg md:text-3xl font-semibold text-white"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.4 }}
                     >
-                      The agent has completed the task
+                      Task completed
                     </motion.span>
                     <motion.span
-                      className="text-base md:text-xl italic text-white break-words"
+                      className="text-sm md:text-xl italic text-white break-words max-h-[150px] md:max-h-none overflow-y-auto px-2"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.6 }}

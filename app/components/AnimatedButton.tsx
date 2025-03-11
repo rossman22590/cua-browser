@@ -29,7 +29,7 @@ export default function AnimatedButton({
       <span className="flex items-center gap-1 font-ppsupply">
         {children}
         <span className="hidden sm:inline text-sm opacity-80 group-hover:opacity-100 transition-opacity">⌘+</span>
-        <div className="hidden sm:block w-3 h-3 rounded-full opacity-80 group-hover:opacity-100 transition-opacity">
+        <div className="hidden sm:block w-3 h-3 opacity-80 group-hover:opacity-100 transition-opacity">
           <svg viewBox="0 0 18 19">
             <path 
               d="M2.40088 13.2758H13.6766C15.2909 13.2758 16.5995 11.9672 16.5995 10.353V1M5.121 9.55976L1.40088 13.2799L5.121 17" 

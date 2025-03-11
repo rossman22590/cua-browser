@@ -3,7 +3,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, useCallback, useEffect } from "react";
 import { useWindowSize } from "usehooks-ts";
-import Sidebar from "./Sidebar";
 
 interface ChatBlockProps {
   isVisible: boolean;
@@ -125,16 +124,6 @@ export default function ChatBlock({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          {!isMobile && (
-            <Sidebar
-              messages={messages}
-              input={input}
-              setInput={setInput}
-              handleSubmit={handleSubmit}
-              isOpen={isSidebarOpen}
-              onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-            />
-          )}
 
           <motion.div
             className="fixed bg-white h-dvh flex flex-col"
@@ -185,9 +174,9 @@ export default function ChatBlock({
                   {/* Window Controls */}
                   <div className="h-12 flex items-center px-4 border-b border-gray-200">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-red-500" />
-                      <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                      <div className="w-3 h-3 rounded-full bg-green-500" />
+                      <div className="w-3 h-3 bg-red-500" />
+                      <div className="w-3 h-3 bg-yellow-500" />
+                      <div className="w-3 h-3 bg-green-500" />
                     </div>
                   </div>
                   {/* Navigation Bar */}
