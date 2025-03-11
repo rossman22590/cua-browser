@@ -296,6 +296,28 @@ export default function LegacyChatFeed({
       // Ensure stepData is an array before using array methods
       if (!Array.isArray(stepData)) {
         console.error("stepData is not an array:", stepData);
+        // Add an error message to the UI
+        const errorStep: BrowserStep = {
+          text: `There was an error processing the request. Please try again.`,
+          reasoning: `API returned invalid data: ${JSON.stringify(stepData)}`,
+          tool: "MESSAGE",
+          instruction: "",
+          stepNumber: stepNumber++,
+        };
+
+        agentStateRef.current = {
+          ...agentStateRef.current,
+          steps: [...agentStateRef.current.steps, errorStep],
+          isLoading: false,
+        };
+
+        setUiState((prev) => ({
+          ...prev,
+          steps: agentStateRef.current.steps,
+          isLoading: false,
+        }));
+
+        setIsWaitingForInput(true);
         return;
       }
 
@@ -835,7 +857,15 @@ export default function LegacyChatFeed({
           }),
         });
 
-        const nextStepData = await nextStepResponse.json();
+        const responseData = await nextStepResponse.json();
+
+        // Ensure nextStepData is always an array
+        const nextStepData = Array.isArray(responseData) ? responseData : [];
+
+        // Log error if we got an invalid response
+        if (!Array.isArray(responseData)) {
+          console.error("API returned non-array data:", responseData);
+        }
 
         // Handle reasoning-only responses by adding a message item if needed
         if (
@@ -845,7 +875,7 @@ export default function LegacyChatFeed({
           console.log("Detected reasoning-only response, adding message item");
           // Add a message item to ensure the reasoning is followed by another item
           nextStepData[0].output.push({
-            id: `msg_fallback_${nextStepData[0]?.responseId || 'default'}`,
+            id: `msg_fallback_${nextStepData[0]?.responseId || "default"}`,
             type: "message",
             role: "assistant",
             content: [
@@ -862,8 +892,14 @@ export default function LegacyChatFeed({
           id: nextStepData[0]?.responseId || null,
         };
 
-        // Process the next step recursively
-        return processStep(nextStepData, sessionId, stepNumber);
+        // Process the next step recursively - ensure nextStepData is an array first
+        if (Array.isArray(nextStepData)) {
+          return processStep(nextStepData, sessionId, stepNumber);
+        } else {
+          console.error("stepData is not an array:", nextStepData);
+          // Return gracefully instead of causing an error
+          return;
+        }
       } else {
         console.log("No message or computer call output");
         console.log("messageItem", messageItem);
@@ -922,7 +958,15 @@ export default function LegacyChatFeed({
           }),
         });
 
-        const nextStepData = await nextStepResponse.json();
+        const responseData = await nextStepResponse.json();
+
+        // Ensure nextStepData is always an array
+        const nextStepData = Array.isArray(responseData) ? responseData : [];
+
+        // Log error if we got an invalid response
+        if (!Array.isArray(responseData)) {
+          console.error("API returned non-array data:", responseData);
+        }
 
         // Handle reasoning-only responses by adding a message item if needed
         if (
@@ -932,7 +976,7 @@ export default function LegacyChatFeed({
           console.log("Detected reasoning-only response, adding message item");
           // Add a message item to ensure the reasoning is followed by another item
           nextStepData[0].output.push({
-            id: `msg_fallback_${nextStepData[0]?.responseId || 'default'}`,
+            id: `msg_fallback_${nextStepData[0]?.responseId || "default"}`,
             type: "message",
             role: "assistant",
             content: [
@@ -1006,7 +1050,7 @@ export default function LegacyChatFeed({
               );
               // Add a message item to ensure reasoning is followed by another item
               retryData[0].output.push({
-                id: `msg_fallback_${retryData[0]?.responseId || 'default'}`,
+                id: `msg_fallback_${retryData[0]?.responseId || "default"}`,
                 type: "message",
                 role: "assistant",
                 content: [
@@ -1127,17 +1171,25 @@ export default function LegacyChatFeed({
             }),
           });
 
-          const startData: {
-            output: Item[];
-            responseId: string;
-          }[] = await startResponse.json();
+          const responseData = await startResponse.json();
 
           posthog.capture("cua_start", {
             goal: initialMessage,
             sessionId: sessionData.sessionId,
           });
 
-          if (startData) {
+          // Ensure startData is always an array
+          const startData = Array.isArray(responseData) ? responseData : [];
+
+          // Log error if we got an invalid response
+          if (!Array.isArray(responseData)) {
+            console.error(
+              "API returned non-array data from /api/cua/start:",
+              responseData
+            );
+          }
+
+          if (startData.length > 0) {
             const stepNumber = 1;
 
             // Process the first step and continue with subsequent steps
@@ -1259,10 +1311,12 @@ export default function LegacyChatFeed({
                 isVisible={true}
                 isCompleted={isAgentFinished}
                 initialMessage={initialMessage}
+                sessionTime={sessionTime}
+                onStop={() => setIsAgentFinished(true)}
               />
 
               {!isAgentFinished && (
-                <div className="mt-4 flex justify-center items-center space-x-1 text-sm text-[#2E191E]">
+                <div className="mt-4 md:hidden flex justify-center items-center space-x-1 text-sm text-[#2E191E]">
                   <SessionControls
                     sessionTime={sessionTime}
                     onStop={() => setIsAgentFinished(true)}

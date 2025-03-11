@@ -2,12 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SessionControls } from './SessionControls';
 
 interface BrowserSessionContainerProps {
   sessionUrl: string | null;
   isVisible: boolean;
   isCompleted: boolean;
   initialMessage: string | undefined;
+  sessionTime?: number;
+  onStop?: () => void;
 }
 
 const containerVariants = {
@@ -97,7 +100,9 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
   sessionUrl,
   isVisible,
   isCompleted,
-  initialMessage
+  initialMessage,
+  sessionTime = 0,
+  onStop = () => {}
 }) => {
   // Track the animation state of curtains
   const [curtainState, setCurtainState] = useState<'closed' | 'opening' | 'open' | 'closing'>('closed');
@@ -178,11 +183,14 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
                 />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center" style={{ backgroundColor: "rgba(245, 240, 255, 0.4)" }}>
-                  <div className="flex flex-col items-center space-y-6 w-full">
-                    <span className="text-2xl font-semibold text-[#2E191E]">Starting CUA Browser</span>
-                    <div className="animate-pulse flex flex-col items-center space-y-4 w-full">
+                  {/* Simple loading animation that will always show when session URL is not available */}
+                  <div className="flex flex-col items-center space-y-6 w-full animate-in fade-in slide-in-from-bottom-5 duration-500">
+                    <h2 className="text-2xl font-semibold text-white z-10 animate-in fade-in duration-700 delay-500">
+                      Starting CUA Browser
+                    </h2>
+                    <div className="flex flex-col items-center space-y-4 w-full animate-in fade-in duration-700 delay-500">
                       <div className="mt-4 flex justify-center">
-                        <div className="rounded-full bg-gray-200 h-16 w-16"></div>
+                        <div className="rounded-full bg-gray-200 h-16 w-16 animate-pulse"></div>
                       </div>
                     </div>
                   </div>
@@ -190,38 +198,88 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
               )
             ) : null}
             
-            {/* Completion Message - Always rendered but only visible when completed */}
-            {isCompleted && (
-              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-4 md:p-8" 
-                style={{ 
-                  backdropFilter: "blur(3px)", 
-                  backgroundColor: "rgba(46, 25, 30, 0.2)"
+            {/* Completion Message with AnimatePresence for fade in/out */}
+            <AnimatePresence>
+              {isCompleted && (
+                <motion.div 
+                  className="absolute inset-0 z-20 flex flex-col items-center justify-center p-4 md:p-8" 
+                  style={{ 
+                    backdropFilter: "blur(3px)", 
+                    backgroundColor: "rgba(46, 25, 30, 0.2)"
+                  }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <motion.div 
+                    className="flex flex-col items-center space-y-4 md:space-y-6 w-full max-w-[90%] md:max-w-[80%] text-center"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                  >
+                    <motion.span 
+                      className="text-xl md:text-3xl font-semibold text-white"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.4 }}
+                    >
+                      The agent has completed the task
+                    </motion.span>
+                    <motion.span 
+                      className="text-base md:text-xl italic text-white break-words"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.6 }}
+                    >
+                      &quot;{initialMessage}&quot;
+                    </motion.span>
+                    
+                    <motion.button
+                      className="px-4 md:px-6 py-2 md:py-3 text-white text-base md:text-lg font-medium mt-4 md:mt-8"
+                      style={{ 
+                        background: '#F14A1C',
+                        backdropFilter: 'blur(12px)',
+                        border: '1px solid rgba(255, 255, 255, 0.3)'
+                      }}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.8 }}
+                      whileHover={{ 
+                        scale: 0.95, 
+                        background: '#F14A1C',
+                      }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => window.location.reload()}
+                    >
+                     Want to try Browserbase?
+                    </motion.button>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          {/* Timer below iframe on desktop - always reserve the space */}
+          <div className="h-[42px] mt-4 hidden md:block">
+            {!isCompleted && sessionUrl && (
+              <motion.div 
+                className="w-full flex justify-center items-center space-x-1 text-sm text-[#2E191E]"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ 
+                  delay: 1.5, 
+                  duration: 0.5, 
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 25
                 }}
               >
-                <div className="flex flex-col items-center space-y-4 md:space-y-6 w-full max-w-[90%] md:max-w-[80%] text-center">
-                  <span className="text-xl md:text-3xl font-semibold text-white">The agent has completed the task</span>
-                  <span className="text-base md:text-xl italic text-white break-words">&quot;{initialMessage}&quot;</span>
-                  
-                  <motion.button
-                    className="px-4 md:px-6 py-2 md:py-3 text-white text-base md:text-lg font-medium mt-4 md:mt-8"
-                    style={{ 
-                      background: '#F14A1C',
-                      backdropFilter: 'blur(12px)',
-                      // boxShadow: '0 4px 20px rgba(245, 240, 255, 0.3)',
-                      border: '1px solid rgba(255, 255, 255, 0.3)'
-                    }}
-                    whileHover={{ 
-                      scale: 0.95, 
-                      // boxShadow: '0 6px 25px rgba(245, 240, 255, 0.4)',
-                      background: '#F14A1C',
-                    }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => window.location.reload()}
-                  >
-                   Want to try Browserbase?
-                  </motion.button>
-                </div>
-              </div>
+                <SessionControls
+                  sessionTime={sessionTime}
+                  onStop={onStop}
+                />
+              </motion.div>
             )}
           </div>
         </motion.div>
