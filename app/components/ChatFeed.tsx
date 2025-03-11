@@ -1165,19 +1165,21 @@ export default function LegacyChatFeed({
               </div>
             )}
             {isAgentFinished && (
-              <div className="w-full md:flex-[2] p-4 md:p-6 border-b md:border-b-0 md:border-l border-[#CAC8C7] order-first md:order-last">
+              <div className="w-full md:flex-[2] p-4 md:p-6 border-b md:border-b-0 md:border-l border-[#CAC8C7] order-first md:order-last flex items-center justify-center">
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.4 }}
-                  className="w-full aspect-video"
+                  className="w-full h-full max-w-[1000px] mx-auto flex flex-col md:justify-center"
+                  style={{ minHeight: "auto" }}
                 >
-                  <div className="w-full h-[300px] md:h-[600px] border border-[#CAC8C7] flex items-center justify-center">
-                    <p className="text-gray-500 text-center">
-                      The agent has completed the task
-                      <br />
-                      &quot;{initialMessage}&quot;
-                    </p>
+                  <div className="w-full h-[250px] md:h-[600px] flex items-center justify-center overflow-hidden border border-[#CAC8C7] shadow-sm bg-white">
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50">
+                      <div className="flex flex-col items-center space-y-4 w-full">
+                        <span className="text-lg font-medium text-gray-500">The agent has completed the task</span>
+                        <span className="text-base italic text-gray-500">&quot;{initialMessage}&quot;</span>
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               </div>
