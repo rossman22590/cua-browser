@@ -9,7 +9,9 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { sessionId, userInput } = body;
+    const { sessionId, userInput, initialUrl } = body;
+    
+    console.log("Request body:", { sessionId, userInput, initialUrl });
 
     computer = new BrowserbaseBrowser(1024, 768, "us-west-2", false, sessionId);
     agent = new Agent("computer-use-preview", computer);
@@ -20,11 +22,32 @@ export async function POST(request: Request) {
         );
       }
 
-      await computer.connect();
-
-      // Check if userInput contains a URL and navigate to it
+      // Check if userInput contains a URL or use initialUrl if provided
       const urlPattern = /(https?:\/\/[^\s]+)|(?:^|\s)([a-zA-Z0-9-]+\.(?:com|org|edu|gov|net|io|ai|app|dev|co|me|info|biz)\b)/;
-      const urlMatch = userInput.match(urlPattern);
+      const urlInInput = userInput.match(urlPattern);
+      const hasUrl = !!initialUrl || !!urlInInput;
+      
+      // If initialUrl is provided, ensure it's properly formatted
+      let formattedInitialUrl = initialUrl;
+      if (initialUrl && !initialUrl.startsWith('http')) {
+        formattedInitialUrl = `https://${initialUrl}`;
+      }
+      
+      console.log("URL detection:", { initialUrl, formattedInitialUrl, urlInInput, hasUrl });
+
+      // Always navigate to the URL first if provided, before any other processing
+      if (formattedInitialUrl) {
+        await computer.connect();
+        console.log("Navigating to initialUrl:", formattedInitialUrl);
+        try {
+          await computer.goto(formattedInitialUrl);
+          console.log("Successfully navigated to initialUrl");
+        } catch (error) {
+          console.error("Error navigating to initialUrl:", error);
+        }
+      } else {
+        await computer.connect();
+      }
 
       const initialMessages: InputItem[] = [
         {
@@ -33,7 +56,7 @@ export async function POST(request: Request) {
         },
         {
           "role": "user",
-          "content": urlMatch ? "What page are we on? Can you take a screenshot to confirm?" : userInput
+          "content": hasUrl ? "What page are we on? Can you take a screenshot to confirm?" : userInput
         }
       ];
 
@@ -47,10 +70,18 @@ export async function POST(request: Request) {
       const actions = await agent.takeAction(stepResult.output);
 
       // This is a hack because function calling doesn't work if it's the first call made by the LLM.
-      if (urlMatch) {
+      if (hasUrl) {
         let fakeAction;
         let fakeStep;
         let done = false;
+
+        // Only navigate to extracted URL if no initialUrl was provided
+        if (!formattedInitialUrl && urlInInput) {
+          // Extract the URL from the match
+          const extractedUrl = urlInInput[1] || `https://${urlInInput[2]}`;
+          console.log("Navigating to extracted URL:", extractedUrl);
+          await computer.goto(extractedUrl);
+        }
 
         do {
           if (fakeStep) {

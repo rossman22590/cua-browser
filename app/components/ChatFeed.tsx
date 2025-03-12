@@ -21,8 +21,8 @@ import BrowserTabs from "./BrowserTabs";
 
 interface ChatFeedProps {
   initialMessage?: string;
+  initialUrl?: string;
   onClose: () => void;
-  url?: string;
 }
 
 export interface BrowserStep {
@@ -171,6 +171,7 @@ const generateDetailedReasoning = (
 
 export default function LegacyChatFeed({
   initialMessage,
+  initialUrl,
   onClose,
 }: ChatFeedProps) {
   const [activePage, setActivePage] = useState<SessionLiveURLs.Page | null>(
@@ -1386,6 +1387,7 @@ export default function LegacyChatFeed({
             body: JSON.stringify({
               sessionId: sessionData.sessionId,
               userInput: initialMessage,
+              initialUrl: initialUrl,
             }),
           });
 
@@ -1529,38 +1531,14 @@ export default function LegacyChatFeed({
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          <div className="flex flex-col md:flex-row h-full overflow-hidden">
-            {/* Main browser area */}
-            <div className="w-full md:w-[70%] p-0 md:border-l border-[#333333] order-first md:order-last flex flex-col items-center justify-center sticky top-0 z-20 bg-black">
-              {/* Tabs */}
-              {!isAgentFinished && uiState.sessionId && (
-                <BrowserTabs
-                  sessionId={uiState.sessionId}
-                  activePage={activePage}
-                  setActivePage={setActivePage}
-                />
-              )}
-
-              <BrowserSessionContainer
-                sessionUrl={activePageUrl}
-                isVisible={true}
-                isCompleted={isAgentFinished}
-                initialMessage={initialMessage}
-                sessionTime={sessionTime}
-                onStop={() => setIsAgentFinished(true)}
-                onRestart={onClose}
-              />
-            </div>
-
+          <div className="flex-1 flex md:flex-row flex-col h-[calc(100vh-50px)] w-full overflow-hidden">
             {/* Chat sidebar */}
             <div
-              className="w-full md:w-[30%] px-4 pb-4 md:p-6 flex flex-col flex-1 overflow-hidden"
+              className="w-full md:w-[40%] flex flex-col overflow-hidden bg-black border-r border-[#333333]"
               style={{
-                height: isMobile
-                  ? "calc(100vh - 400px)"
-                  : "calc(100% - 100px)",
-                flex: "1 1 auto",
-                position: "relative",
+                maxWidth: "450px",
+                minWidth: "350px",
+                height: "100%"
               }}
             >
               {/* Pinned Goal Message */}
@@ -1635,15 +1613,30 @@ export default function LegacyChatFeed({
 
               <div
                 ref={chatContainerRef}
-                className="flex-1 overflow-y-auto overflow-x-hidden space-y-4 hide-scrollbar"
+                className="flex-1 overflow-y-auto px-4 py-2 space-y-4"
                 style={{
-                  height: isMobile
-                    ? "calc(100vh - 400px)"
-                    : "calc(100% - 100px)",
-                  flex: "1 1 auto",
-                  position: "relative",
+                  height: "calc(100% - 140px)",
+                  scrollbarWidth: "thin",
+                  scrollbarColor: "#666 #333",
                 }}
               >
+                <style jsx global>{`
+                  /* Custom scrollbar for Webkit browsers */
+                  ::-webkit-scrollbar {
+                    width: 8px;
+                  }
+                  ::-webkit-scrollbar-track {
+                    background: #333;
+                    border-radius: 4px;
+                  }
+                  ::-webkit-scrollbar-thumb {
+                    background: #666;
+                    border-radius: 4px;
+                  }
+                  ::-webkit-scrollbar-thumb:hover {
+                    background: #888;
+                  }
+                `}</style>
                 {uiState.steps.map((step, index) => {
                   // Determine if this is a system message (like stock price info)
                   const isSystemMessage =
@@ -1910,6 +1903,29 @@ export default function LegacyChatFeed({
                   </div>
                 </motion.div>
               )}
+            </div>
+            {/* Main browser area */}
+            <div className="w-full md:flex-1 p-0 md:border-l border-[#333333] order-first md:order-last flex flex-col bg-black h-full">
+              {/* Tabs */}
+              {!isAgentFinished && uiState.sessionId && (
+                <BrowserTabs
+                  sessionId={uiState.sessionId}
+                  activePage={activePage}
+                  setActivePage={setActivePage}
+                />
+              )}
+
+              <div className="flex-1 w-full h-full">
+                <BrowserSessionContainer
+                  sessionUrl={activePageUrl}
+                  isVisible={true}
+                  isCompleted={isAgentFinished}
+                  initialMessage={initialMessage}
+                  sessionTime={sessionTime}
+                  onStop={() => setIsAgentFinished(true)}
+                  onRestart={onClose}
+                />
+              </div>
             </div>
           </div>
         </motion.div>

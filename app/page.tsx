@@ -49,6 +49,7 @@ const Tooltip = ({
 export default function Home() {
   const [isChatVisible, setIsChatVisible] = useState(false);
   const [initialMessage, setInitialMessage] = useState("");
+  const [initialUrl, setInitialUrl] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -85,19 +86,21 @@ export default function Home() {
   }, [isChatVisible]);
 
   const startChat = useCallback(
-    (finalMessage: string) => {
+    (finalMessage: string, url?: string) => {
       setInitialMessage(finalMessage);
+      if (url) setInitialUrl(url);
       setIsChatVisible(true);
 
       try {
         posthog.capture("submit_message", {
           message: finalMessage,
+          url: url || "",
         });
       } catch (e) {
         console.error(e);
       }
     },
-    [setInitialMessage, setIsChatVisible]
+    [setInitialMessage, setInitialUrl, setIsChatVisible]
   );
 
   return (
@@ -121,7 +124,7 @@ export default function Home() {
           <nav className="flex justify-between items-center px-8 py-4 bg-black border-b border-[#333333] z-10 w-full">
             <div className="flex items-center gap-3">
               <a
-                href="https://www.browserbase.com/computer-use"
+                href="https://myapps.ai"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 hover:opacity-90 transition-opacity duration-200"
@@ -178,7 +181,7 @@ export default function Home() {
               <div className="p-8 md:p-10 lg:p-12 flex flex-col items-center gap-8 md:gap-10">
                 <div className="flex flex-col items-center gap-3 md:gap-5">
                   <h1 className="text-2xl md:text-3xl lg:text-4xl font-ppneue text-white text-center">
-                    Computer Use Browser
+                    AI Tutor Browser
                   </h1>
                   <p className="text-base md:text-lg font-ppsupply text-gray-400 text-center">
                     Hit run to watch AI browse the web.
@@ -189,12 +192,15 @@ export default function Home() {
                   onSubmit={(e) => {
                     e.preventDefault();
                     const formData = new FormData(e.currentTarget);
-                    const input = e.currentTarget.querySelector(
+                    const messageInput = e.currentTarget.querySelector(
                       'input[name="message"]'
                     ) as HTMLInputElement;
-                    const message = (formData.get("message") as string).trim();
-                    const finalMessage = message || input.placeholder;
-                    startChat(finalMessage);
+                    const urlInput = e.currentTarget.querySelector(
+                      'input[name="url"]'
+                    ) as HTMLInputElement;
+                    const message = (formData.get("message") as string)?.trim() || messageInput.placeholder;
+                    const url = (formData.get("url") as string)?.trim() || "";
+                    startChat(message, url);
                   }}
                   className="w-full max-w-[720px] md:max-w-[880px] lg:max-w-[1040px] flex flex-col items-center gap-3 md:gap-5"
                 >
@@ -215,6 +221,21 @@ export default function Home() {
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                       <AnimatedButton type="submit">Run</AnimatedButton>
                     </div>
+                  </div>
+                  
+                  <div className="relative w-full">
+                    <input
+                      name="url"
+                      type="text"
+                      placeholder="https://example.com (optional starting URL)"
+                      className="w-full px-4 py-3 border border-[#333333] text-white bg-[#1a1a1a] placeholder:text-gray-500 focus:outline-none focus:ring-0 focus:border-[#ff00bf] font-ppsupply text-sm md:text-base md:py-3 transition-all duration-300 focus:pulse-glow-pink focus:backdrop-blur-sm focus:bg-opacity-95 focus:bg-[#1a1a1a] rounded-lg"
+                      style={{
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        backdropFilter: "blur(8px)",
+                      }}
+                    />
                   </div>
                 </form>
                 <div className="grid grid-cols-2 gap-3 md:gap-4 lg:gap-5 w-full">
@@ -327,11 +348,11 @@ export default function Home() {
               >
                 Powered by{" "}
                 <motion.a
-                  href="https://browserbase.com"
+                  href="https://myapps.ai"
                   className="text-[#ff00bf] hover:underline relative"
                   whileHover={{ scale: 1.05 }}
                 >
-                  🅱️ Browserbase
+                  AI Tutor
                 </motion.a>{" "}
                 and OpenAI&apos;s computer-use model preview.
               </motion.p>
@@ -339,7 +360,15 @@ export default function Home() {
           </main>
         </div>
       ) : (
-        <ChatFeed initialMessage={initialMessage} onClose={() => setIsChatVisible(false)} />
+        <ChatFeed
+          initialMessage={initialMessage}
+          initialUrl={initialUrl}
+          onClose={() => {
+            setIsChatVisible(false);
+            setInitialMessage("");
+            setInitialUrl("");
+          }}
+        />
       )}
     </AnimatePresence>
   );

@@ -197,25 +197,75 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
               }
             />
             {/* Browser Content */}
-            {!isCompleted ? (
-              sessionUrl ? (
-                <iframe
-                  src={sessionUrl}
-                  className="w-full h-full border-none absolute inset-0"
-                  sandbox="allow-same-origin allow-scripts allow-forms"
-                  allow="clipboard-read; clipboard-write"
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
-                  title="Browser Session"
-                />
+            <div
+              className={`relative w-full h-full flex flex-col ${
+                !sessionUrl ? "items-center justify-center" : ""
+              }`}
+              style={{
+                height: "100%",
+                width: "100%",
+                flex: "1 1 auto",
+                position: "relative"
+              }}
+            >
+              {!isCompleted ? (
+                sessionUrl ? (
+                  <div className="w-full h-full relative flex-1">
+                    <iframe
+                      src={sessionUrl}
+                      className="w-full h-full border-none"
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        width: "100%",
+                        height: "100%"
+                      }}
+                      sandbox="allow-same-origin allow-scripts allow-forms"
+                      allow="clipboard-read; clipboard-write"
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      title="Browser Session"
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className="w-full h-full flex flex-col items-center justify-center p-6 space-y-4"
+                  >
+                    <div className="animate-pulse">
+                      <div className="w-12 h-12 rounded-full bg-[#111111] border-2 border-[#ff00bf] flex items-center justify-center">
+                        <svg
+                          className="w-6 h-6 text-[#ff00bf]"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                    <h3 className="text-xl font-semibold text-white">
+                      Starting New Session
+                    </h3>
+                    <p className="text-center text-gray-300 max-w-md">
+                      {initialMessage
+                        ? `Goal: ${initialMessage}`
+                        : "Initializing browser session..."}
+                    </p>
+                  </div>
+                )
               ) : (
                 <div
                   className="w-full h-full flex flex-col items-center justify-center p-6 space-y-4"
                 >
                   <div className="animate-pulse">
-                    <div className="w-12 h-12 rounded-full bg-[#111111] border-2 border-[#ff00bf] flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-[#ff00bf] flex items-center justify-center">
                       <svg
-                        className="w-6 h-6 text-[#ff00bf]"
+                        className="w-6 h-6 text-white"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -224,60 +274,30 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                          d="M5 13l4 4L19 7"
                         />
                       </svg>
                     </div>
                   </div>
                   <h3 className="text-xl font-semibold text-white">
-                    Starting New Session
+                    Session Complete
                   </h3>
                   <p className="text-center text-gray-300 max-w-md">
-                    {initialMessage
-                      ? `Goal: ${initialMessage}`
-                      : "Initializing browser session..."}
+                    The browser session has been completed. You can restart with a
+                    new goal or close this session.
                   </p>
-                </div>
-              )
-            ) : (
-              <div
-                className="w-full h-full flex flex-col items-center justify-center p-6 space-y-4"
-              >
-                <div className="animate-pulse">
-                  <div className="w-12 h-12 rounded-full bg-[#ff00bf] flex items-center justify-center">
-                    <svg
-                      className="w-6 h-6 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                  <div className="flex gap-2 mt-4">
+                    <button
+                      onClick={onRestart}
+                      className="flex items-center px-4 py-2 bg-black text-[#ff00bf] border border-[#ff00bf] rounded-lg hover:bg-[#ff00bf] hover:text-white transition-colors"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
+                      <RotateCcwIcon size={16} className="mr-2" />
+                      New Session
+                    </button>
                   </div>
                 </div>
-                <h3 className="text-xl font-semibold text-white">
-                  Session Complete
-                </h3>
-                <p className="text-center text-gray-300 max-w-md">
-                  The browser session has been completed. You can restart with a
-                  new goal or close this session.
-                </p>
-                <div className="flex gap-2 mt-4">
-                  <button
-                    onClick={onRestart}
-                    className="flex items-center px-4 py-2 bg-black text-[#ff00bf] border border-[#ff00bf] rounded-lg hover:bg-[#ff00bf] hover:text-white transition-colors"
-                  >
-                    <RotateCcwIcon size={16} className="mr-2" />
-                    New Session
-                  </button>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </motion.div>
       )}

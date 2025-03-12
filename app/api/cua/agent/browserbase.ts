@@ -16,12 +16,24 @@ interface BrowserbaseSession extends SessionCreateResponse {
 interface SessionCreateParams {
   projectId: string;
   browserSettings: {
+    blockAds: boolean;
+    solveCaptchas: boolean;
+    fingerprint?: {
+      browsers?: ("chrome" | "firefox" | "edge" | "safari")[];
+      devices?: ("desktop" | "mobile")[];
+      locales?: string[];
+      operatingSystems?: ("android" | "ios" | "linux" | "macos" | "windows")[];
+      screen?: {
+        maxWidth?: number;
+        maxHeight?: number;
+        minWidth?: number;
+        minHeight?: number;
+      };
+    };
     viewport: {
       width: number;
       height: number;
     };
-    blockAds: boolean;
-    solveCaptchas: boolean;
   };
   region: "us-west-2" | "us-east-1" | "eu-central-1" | "ap-southeast-1";
   proxies: boolean;
@@ -97,6 +109,18 @@ export class BrowserbaseBrowser extends BasePlaywrightComputer {
         browserSettings: {
           blockAds: true,
           solveCaptchas: true,
+          fingerprint: {
+            browsers: ["chrome", "firefox", "edge", "safari"],
+            devices: ["desktop"],
+            locales: ["en-US"],
+            operatingSystems: ["windows", "macos"],
+            screen: {
+              maxWidth: 1920,
+              maxHeight: 1080,
+              minWidth: 1024,
+              minHeight: 768,
+            }
+          },
           viewport: {
             width,
             height,
