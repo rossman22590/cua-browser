@@ -17,7 +17,7 @@ export default function AnimatedButton({
     <motion.button
       type={type}
       onClick={onClick}
-      className={`absolute right-2 sm:right-5  px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 bg-[#FF3B00] hover:bg-[#FF2200] text-white font-medium transition-colors ${className} group`}
+      className={`absolute right-2 sm:right-5 px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 bg-[#ff00bf] hover:bg-[#d100a3] text-white font-medium transition-colors ${className} group rounded-lg`}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.95 }}
       transition={{
@@ -44,4 +44,4 @@ export default function AnimatedButton({
       </span>
     </motion.button>
   );
-} 
+}

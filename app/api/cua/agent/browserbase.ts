@@ -21,6 +21,7 @@ interface SessionCreateParams {
       height: number;
     };
     blockAds: boolean;
+    solveCaptchas: boolean;
   };
   region: "us-west-2" | "us-east-1" | "eu-central-1" | "ap-southeast-1";
   proxies: boolean;
@@ -95,6 +96,7 @@ export class BrowserbaseBrowser extends BasePlaywrightComputer {
         projectId: this.projectId,
         browserSettings: {
           blockAds: true,
+          solveCaptchas: true,
           viewport: {
             width,
             height,

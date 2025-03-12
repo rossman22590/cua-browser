@@ -897,6 +897,8 @@ export default function LegacyChatFeed({
         )[] = await computerCallResponse.json();
 
         const nextStepResponse = await fetch("/api/cua/step/generate", {
+          // Add retry logic for API errors
+          signal: AbortSignal.timeout(15000), // 15 second timeout
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -916,13 +918,13 @@ export default function LegacyChatFeed({
 
         const responseData = await nextStepResponse.json();
 
+        // Ensure nextStepData is always an array
+        const nextStepData = Array.isArray(responseData) ? responseData : [];
+
         // Log error if we got an invalid response
         if (!Array.isArray(responseData)) {
           console.error("API returned non-array data:", responseData);
         }
-
-        // Ensure nextStepData is always an array
-        const nextStepData = Array.isArray(responseData) ? responseData : [];
 
         // Handle reasoning-only responses by adding a message item if needed
         if (
@@ -997,8 +999,8 @@ export default function LegacyChatFeed({
       try {
         // Continue the conversation
         const nextStepResponse = await fetch("/api/cua/step/generate", {
-          // Add retry logic for API errors
-          signal: AbortSignal.timeout(15000), // 15 second timeout
+          // Increase timeout to prevent timeout errors
+          signal: AbortSignal.timeout(30000), // 30 second timeout
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -1014,6 +1016,102 @@ export default function LegacyChatFeed({
             ],
           }),
         });
+
+        // Check if the session needs to be reactivated
+        if (nextStepResponse.status === 401 || nextStepResponse.status === 404) {
+          console.log("Session expired or not found, attempting to reactivate");
+          
+          // Try to reactivate the session
+          const reactivateResponse = await fetch("/api/session/reactivate", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              sessionId: agentStateRef.current.sessionId,
+            }),
+          });
+          
+          if (reactivateResponse.ok) {
+            const reactivateData = await reactivateResponse.json();
+            
+            if (reactivateData.success) {
+              console.log("Session reactivated successfully, retrying request");
+              
+              // Retry the original request with the reactivated session
+              const retryResponse = await fetch("/api/cua/step/generate", {
+                signal: AbortSignal.timeout(30000),
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  sessionId: agentStateRef.current.sessionId,
+                  responseId: currentResponseRef.current?.id,
+                  input: [
+                    {
+                      role: "user",
+                      content: input,
+                    },
+                  ],
+                }),
+              });
+              
+              if (retryResponse.ok) {
+                const responseData = await retryResponse.json();
+                
+                // Continue with the normal flow
+                const nextStepData = Array.isArray(responseData) ? responseData : [];
+                
+                if (!Array.isArray(responseData)) {
+                  console.error("API returned non-array data:", responseData);
+                }
+                
+                // Handle reasoning-only responses
+                if (
+                  nextStepData[0]?.output?.length === 1 &&
+                  nextStepData[0]?.output[0]?.type === "reasoning"
+                ) {
+                  console.log("Detected reasoning-only response, adding message item");
+                  nextStepData[0].output.push({
+                    id: `msg_fallback_${nextStepData[0]?.responseId || "default"}`,
+                    type: "message",
+                    role: "assistant",
+                    content: [
+                      {
+                        type: "output_text",
+                        text: "I'll help you with that task.",
+                        annotations: [],
+                      },
+                    ],
+                  });
+                }
+                
+                currentResponseRef.current = {
+                  id: nextStepData[0].responseId,
+                };
+                
+                const stepNumber = agentStateRef.current.steps.length + 1;
+                
+                if (agentStateRef.current.sessionId) {
+                  return processStep(
+                    nextStepData,
+                    agentStateRef.current.sessionId,
+                    stepNumber
+                  );
+                }
+              } else {
+                throw new Error("Failed to process request after session reactivation");
+              }
+            } else {
+              throw new Error("Failed to reactivate session");
+            }
+          } else {
+            throw new Error("Failed to reactivate session");
+          }
+        } else if (!nextStepResponse.ok) {
+          throw new Error(`API error: ${nextStepResponse.status}`);
+        }
 
         const responseData = await nextStepResponse.json();
 
@@ -1031,7 +1129,7 @@ export default function LegacyChatFeed({
           nextStepData[0]?.output[0]?.type === "reasoning"
         ) {
           console.log("Detected reasoning-only response, adding message item");
-          // Add a message item to ensure the reasoning is followed by another item
+          // Add a message item to ensure reasoning is followed by another item
           nextStepData[0].output.push({
             id: `msg_fallback_${nextStepData[0]?.responseId || "default"}`,
             type: "message",
@@ -1062,6 +1160,75 @@ export default function LegacyChatFeed({
         }
       } catch (error) {
         console.error("Error handling user input:", error);
+        
+        // Check if this is a timeout error
+        if (error instanceof DOMException && error.name === "TimeoutError") {
+          console.log("Request timed out, attempting to recover");
+          
+          // Add a timeout error message
+          const timeoutStep: BrowserStep = {
+            text: "The request timed out. I'll try to continue with your task.",
+            reasoning: "TimeoutError: signal timed out",
+            tool: "MESSAGE",
+            instruction: "",
+            stepNumber: agentStateRef.current.steps.length + 1,
+          };
+          
+          agentStateRef.current = {
+            ...agentStateRef.current,
+            steps: [...agentStateRef.current.steps, timeoutStep],
+          };
+          
+          setUiState((prev) => ({
+            ...prev,
+            steps: agentStateRef.current.steps,
+          }));
+          
+          // Try to recover by sending a simpler request
+          try {
+            const recoveryResponse = await fetch("/api/cua/step/generate", {
+              signal: AbortSignal.timeout(30000),
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                sessionId: agentStateRef.current.sessionId,
+                responseId: currentResponseRef.current?.id,
+                input: [
+                  {
+                    role: "user",
+                    content: "Please continue with the task.",
+                  },
+                ],
+              }),
+            });
+            
+            if (recoveryResponse.ok) {
+              const recoveryData = await recoveryResponse.json();
+              const recoveryStepData = Array.isArray(recoveryData) ? recoveryData : [];
+              
+              currentResponseRef.current = {
+                id: recoveryStepData[0]?.responseId || null,
+              };
+              
+              const stepNumber = agentStateRef.current.steps.length + 1;
+              
+              if (agentStateRef.current.sessionId) {
+                return processStep(
+                  recoveryStepData,
+                  agentStateRef.current.sessionId,
+                  stepNumber
+                );
+              }
+            } else {
+              throw new Error("Recovery attempt failed");
+            }
+          } catch (recoveryError) {
+            console.error("Recovery attempt failed:", recoveryError);
+            // Fall through to default error handling
+          }
+        }
 
         // Check if this is a reasoning item error
         if (
@@ -1289,19 +1456,19 @@ export default function LegacyChatFeed({
 
   return (
     <motion.div
-      className="min-h-screen bg-gray-50 flex flex-col"
+      className="min-h-screen bg-black flex flex-col w-full"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
       exit="exit"
     >
       <motion.nav
-        className="flex justify-between items-center px-4 pt-4 sm:px-8 sm:py-4 bg-white sm:border-b border-[#CAC8C7] shadow-sm relative z-10"
+        className="flex justify-between items-center px-4 pt-4 sm:px-8 sm:py-4 bg-black sm:border-b border-[#333333] shadow-sm relative z-10 w-full"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
         style={{
-          backgroundColor: "#ffffff",
+          backgroundColor: "#000000",
         }}
       >
         <div className="flex items-center gap-2">
@@ -1312,45 +1479,27 @@ export default function LegacyChatFeed({
             className="flex items-center gap-3 hover:opacity-90 transition-opacity duration-200"
           >
             <Image
-              src="/favicon.svg"
-              alt="CUA Browser"
+              src="https://img.mytsi.org/i/lP72916.png"
+              alt="Browser"
               className="w-8 h-8"
               width={32}
               height={32}
             />
-            <span className="font-ppsupply text-xl font-bold text-[#100D0D]">
-              CUA Browser
+            <span className="font-ppsupply text-xl font-bold text-white">
+              Browser
             </span>
           </a>
         </div>
         <div className="flex items-center gap-2">
-          <a
-            href="https://browserbase.com/computer-use"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <button className=" flex items-center justify-center px-3 py-2 bg-white gap-1 text-sm font-medium border border-[#F14A1C] transition-all duration-200 hover:bg-[#F14A1C] group h-full">
-              <Layers
-                size={20}
-                className="sm:mr-2 text-[#F14A1C] group-hover:text-white transition-colors duration-200"
-                strokeWidth={2}
-                strokeLinecap="square"
-                strokeLinejoin="miter"
-              />
-              <span className="hidden sm:inline text-[#F14A1C] group-hover:text-white transition-colors  duration-200">
-                Deploy
-              </span>
-            </button>
-          </a>
           <motion.button
             onClick={onClose}
-            className="flex items-center justify-center px-3 py-2 bg-[#F6F5F5] gap-1 text-sm font-medium border border-[#CAC8C7] transition-all duration-200 hover:bg-gray-100 h-full"
+            className="flex items-center justify-center px-3 py-2 bg-black gap-1 text-sm font-medium border border-[#9333ea] transition-all duration-200 hover:bg-[#9333ea] h-full rounded-lg"
             whileTap={{ scale: 0.98 }}
           >
-            <span className="flex items-center text-[#10100D]">
+            <span className="flex items-center text-[#9333ea] hover:text-white group-hover:text-white">
               Close
               {!isMobile && (
-                <kbd className="px-1.5 text-xs bg-gray-100 ml-2 border border-[#CAC8C7]">
+                <kbd className="px-1.5 text-xs bg-black ml-2 border border-[#9333ea] text-[#9333ea]">
                   ESC
                 </kbd>
               )}
@@ -1359,8 +1508,8 @@ export default function LegacyChatFeed({
         </div>
       </motion.nav>
       <main
-        className="flex-1 flex flex-col items-center sm:p-4 md:p-6 relative overflow-hidden"
-        style={{ backgroundColor: "#FCFCFC" }}
+        className="flex-1 flex flex-col items-center sm:p-4 md:p-6 relative overflow-hidden w-full"
+        style={{ backgroundColor: "#000000" }}
       >
         <div
           className="absolute inset-0 z-0 overflow-hidden pointer-events-none"
@@ -1369,12 +1518,12 @@ export default function LegacyChatFeed({
             backgroundSize: "25%",
             backgroundPosition: "center",
             backgroundRepeat: "repeat",
-            opacity: 0.8,
+            opacity: 0.2,
             position: "fixed",
           }}
         ></div>
         <motion.div
-          className="w-full max-w-[1600px] bg-white md:border border-[#CAC8C7] shadow-sm overflow-hidden mx-auto relative z-10"
+          className="w-full bg-black md:border border-[#333333] shadow-sm overflow-hidden mx-auto relative z-10 rounded-xl"
           style={{ height: isMobile ? "calc(100vh - 56px)" : "auto" }}
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -1382,7 +1531,7 @@ export default function LegacyChatFeed({
         >
           <div className="flex flex-col md:flex-row h-full overflow-hidden">
             {/* Main browser area */}
-            <div className="w-full md:flex-[2] gap-y-2 p-4 md:p-6 md:border-l border-[#CAC8C7] order-first md:order-last flex flex-col items-center justify-center sticky top-0 z-20 bg-white">
+            <div className="w-full md:w-[70%] p-0 md:border-l border-[#333333] order-first md:order-last flex flex-col items-center justify-center sticky top-0 z-20 bg-black">
               {/* Tabs */}
               {!isAgentFinished && uiState.sessionId && (
                 <BrowserTabs
@@ -1401,35 +1550,27 @@ export default function LegacyChatFeed({
                 onStop={() => setIsAgentFinished(true)}
                 onRestart={onClose}
               />
-
-              {!isAgentFinished && (
-                <div className="mt-4 md:hidden flex justify-center items-center space-x-1 text-sm text-[#2E191E]">
-                  <SessionControls
-                    sessionTime={sessionTime}
-                    onStop={() => setIsAgentFinished(true)}
-                  />
-                </div>
-              )}
             </div>
 
             {/* Chat sidebar */}
             <div
-              className="w-full md:w-[450px] min-w-0 md:min-w-[360px] px-4 pb-4 md:p-6 flex flex-col flex-1 overflow-hidden"
+              className="w-full md:w-[30%] px-4 pb-4 md:p-6 flex flex-col flex-1 overflow-hidden"
               style={{
                 height: isMobile
-                  ? "calc(100vh - 300px)"
-                  : "calc(100vh - 12rem)",
+                  ? "calc(100vh - 400px)"
+                  : "calc(100% - 100px)",
+                flex: "1 1 auto",
                 position: "relative",
               }}
             >
               {/* Pinned Goal Message */}
               {initialMessage && (
-                <div className="relative">
+                <div className="relative mb-4">
                   {/* Blur effect behind the goal message */}
                   <div
                     className="absolute pointer-events-none"
                     style={{
-                      background: "rgba(245, 240, 255, 0.4)",
+                      background: "rgba(147, 51, 234, 0.1)",
                       filter: "blur(20px)",
                       width: "130%",
                       height: "130%",
@@ -1447,22 +1588,23 @@ export default function LegacyChatFeed({
                       !isScrolled ? "mb-4" : ""
                     }`}
                     style={{
-                      backgroundColor: "rgba(245, 240, 255, 0.75)",
+                      backgroundColor: "rgba(25, 25, 25, 0.75)",
                       backdropFilter: "blur(8px)",
-                      border: "1px solid #CAC8C7",
+                      border: "1px solid #333333",
                       width: "100%",
                       maxWidth: "100%",
                       marginLeft: 0,
                       marginRight: 0,
                       position: "relative",
                       zIndex: 2,
+                      borderRadius: "0.75rem",
                     }}
                   >
                     <div
                       className="absolute pointer-events-none"
                       style={{
                         background:
-                          "linear-gradient(to bottom, rgba(245, 240, 255, 0.85), rgba(245, 240, 255, 0))",
+                          "linear-gradient(to bottom, rgba(147, 51, 234, 0.1), rgba(147, 51, 234, 0))",
                         opacity: 0.6,
                         filter: "blur(2px)",
                         width: "150%",
@@ -1476,15 +1618,15 @@ export default function LegacyChatFeed({
 
                     <div className="absolute right-2">
                       <Pin
-                        color="#2E191E"
+                        color="#ff00bf"
                         size={17}
                         strokeWidth={2}
                         style={{ transform: "rotate(30deg)" }}
                       />
                     </div>
-                    <p className="font-semibold pr-6">Goal:</p>
+                    <p className="font-semibold pr-6 text-[#ff00bf]">Goal:</p>
 
-                    <p className="break-words overflow-hidden text-ellipsis max-w-full">
+                    <p className="break-words overflow-hidden text-ellipsis max-w-full text-white">
                       {initialMessage}
                     </p>
                   </motion.div>
@@ -1516,19 +1658,19 @@ export default function LegacyChatFeed({
                       variants={messageVariants}
                       className={`p-4 ${
                         isUserInput
-                          ? "bg-white"
+                          ? "bg-[#111111]"
                           : isSystemMessage
-                          ? "bg-[#2E191E] text-white"
-                          : "bg-[#FCFCFC]"
-                      } border border-[#B3B1B0] font-ppsupply space-y-2`}
+                          ? "bg-[#9333ea] text-white"
+                          : "bg-[#111111]"
+                      } border border-[#333333] font-ppsupply space-y-2 rounded-lg`}
                     >
                       <div className="flex justify-between items-center">
                         {/* Step number */}
                         <span
                           className={`text-sm ${
                             isSystemMessage
-                              ? "text-[gray-200]"
-                              : "text-[#2E191E]"
+                              ? "text-white"
+                              : "text-[#ff00bf]"
                           }`}
                         >
                           Step {step.stepNumber}
@@ -1537,14 +1679,14 @@ export default function LegacyChatFeed({
                         <span
                           className={`px-2 py-1 ${
                             isSystemMessage
-                              ? " text-gray-200"
-                              : " text-white-200"
-                          } border border-[#CAC8C7] text-xs`}
+                              ? "bg-[#7928c9] text-white"
+                              : "bg-black text-[#ff00bf]"
+                          } border border-[#333333] text-xs rounded-md`}
                         >
                           {step.tool}
                         </span>
                       </div>
-                      <div className="font-medium">
+                      <div className={`font-medium ${isUserInput || isSystemMessage ? "text-white" : "text-white"}`}>
                         {isSystemMessage && step.tool === "MESSAGE" ? (
                           <>
                             {(() => {
@@ -1636,7 +1778,7 @@ export default function LegacyChatFeed({
                                 // Only render the answer part in this message block
                                 return (
                                   <div className="mb-3">
-                                    <div className="text-xs font-semibold text-gray-200 mb-1">
+                                    <div className="text-xs font-semibold text-[#ff00bf] mb-1">
                                       ANSWER:
                                     </div>
                                     <div className="p-2">
@@ -1648,7 +1790,7 @@ export default function LegacyChatFeed({
                                 // For regular messages without questions, format them as answers
                                 return (
                                   <div className="mb-3">
-                                    {/* <div className="text-xs font-semibold text-gray-200 mb-1">
+                                    {/* <div className="text-xs font-semibold text-[#ff00bf] mb-1">
                                       ANSWER:
                                     </div> */}
                                     <div className="p-2 ">
@@ -1666,8 +1808,8 @@ export default function LegacyChatFeed({
                       {/* Show reasoning for all steps except the last one */}
                       {(!isSystemMessage ||
                         index < uiState.steps.length - 1) && (
-                        <p className="text-sm text-white-200">
-                          <span className="font-semibold">Reasoning: </span>
+                        <p className="text-sm text-gray-300">
+                          <span className="font-semibold text-[#ff00bf]">Reasoning: </span>
                           {step.reasoning}
                         </p>
                       )}
@@ -1706,7 +1848,7 @@ export default function LegacyChatFeed({
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.5, duration: 0.3 }}
-                            className={`p-4 bg-[#2E191E] text-white font-ppsupply space-y-2 mt-2`}
+                            className={`p-4 bg-[#9333ea] text-white font-ppsupply space-y-2 mt-2 rounded-lg`}
                           >
                             <div className="flex justify-between items-center">
                               {/* <span className="text-sm text-gray-200">
@@ -1730,52 +1872,43 @@ export default function LegacyChatFeed({
               </div>
 
               {/* Chat Input */}
-              {isWaitingForInput && !isAgentFinished && (
-                <motion.form
-                  initial={{ opacity: 0, y: 20 }}
+              {isWaitingForInput && (
+                <motion.div
+                  className="w-full p-4 bg-black border border-[#333333] rounded-lg mt-4"
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  onAnimationComplete={() => {
-                    // Focus input when animation completes
-                    if (inputRef.current) {
-                      inputRef.current.focus();
-                      console.log("Animation complete, focusing input");
-                    }
-                  }}
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    if (
-                      ["quit", "exit", "bye"].includes(userInput.toLowerCase())
-                    ) {
-                      setIsAgentFinished(true);
-                      return;
-                    }
-                    await handleUserInput(userInput);
-                  }}
-                  className="mt-4 flex gap-2 w-full"
+                  transition={{ duration: 0.3 }}
                 >
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={userInput}
-                    onChange={(e) => setUserInput(e.target.value)}
-                    placeholder="Type your message..."
-                    className="flex-1 px-2 sm:px-4 py-2 border focus:outline-none focus:ring-1 focus:ring-[#FF3B00] focus:border-transparent font-ppsupply transition-all text-sm sm:text-base"
-                    style={{
-                      // backgroundColor: "rgba(245, 240, 255, 0.75)",
-                      backdropFilter: "blur(8px)",
-                      borderColor: "rgba(255, 59, 0, 0.5)",
-                      borderWidth: "2px",
-                    }}
-                  />
-                  <button
-                    type="submit"
-                    disabled={!userInput.trim()}
-                    className="px-2 sm:px-4 py-2 bg-[#FF3B00] text-white font-ppsupply disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#E63500] transition-colors text-sm sm:text-base whitespace-nowrap"
-                  >
-                    Send
-                  </button>
-                </motion.form>
+                  <div className="flex items-center">
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      value={userInput}
+                      onChange={(e) => setUserInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && userInput.trim()) {
+                          handleUserInput(userInput);
+                        }
+                      }}
+                      placeholder="Type your response..."
+                      className="w-full p-2 text-white bg-[#111111] border border-[#333333] focus:border-[#ff00bf] focus:ring-1 focus:ring-[#ff00bf] outline-none rounded-lg"
+                      autoFocus
+                    />
+                    <motion.button
+                      onClick={() => handleUserInput(userInput)}
+                      disabled={!userInput.trim()}
+                      className={`ml-2 px-4 py-2 bg-[#ff00bf] text-white font-medium rounded-lg ${
+                        !userInput.trim()
+                          ? "opacity-50 cursor-not-allowed"
+                          : "hover:bg-[#d100a3]"
+                      }`}
+                      whileHover={{ scale: userInput.trim() ? 1.05 : 1 }}
+                      whileTap={{ scale: userInput.trim() ? 0.95 : 1 }}
+                    >
+                      Send
+                    </motion.button>
+                  </div>
+                </motion.div>
               )}
             </div>
           </div>

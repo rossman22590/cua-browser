@@ -142,7 +142,7 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
     <AnimatePresence mode="wait">
       {isVisible && (
         <motion.div
-          className="w-full max-w-[1000px] mx-auto flex flex-col md:justify-center"
+          className="w-full mx-auto flex flex-col md:justify-center"
           style={{ minHeight: "auto" }}
           variants={containerVariants}
           initial="hidden"
@@ -152,17 +152,26 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
         >
           {/* Browser frame */}
           <div
-            className="w-full h-[250px] md:h-[600px] flex items-center justify-center overflow-hidden border border-[#CAC8C7] shadow-sm relative"
+            className="w-full h-[540px] md:h-[90vh] flex items-center justify-center overflow-hidden border border-[#333333] shadow-sm relative rounded-lg"
             style={{
-              backgroundColor: "rgba(245, 240, 255, 0.75)",
+              backgroundColor: "rgba(25, 25, 25, 0.75)",
               backdropFilter: "blur(8px)",
             }}
           >
+            {/* Always visible timer and controls */}
+            {!isCompleted && sessionUrl && (
+              <div className="absolute top-4 right-4 z-20">
+                <SessionControls
+                  sessionTime={sessionTime}
+                  onStop={onStop}
+                />
+              </div>
+            )}
             {/* Left Curtain */}
             <motion.div
               className="absolute top-0 left-0 w-1/2 h-full z-10"
               style={{
-                backgroundColor: "#2E191E",
+                backgroundColor: "#9333ea",
               }}
               variants={leftCurtainVariants}
               initial="visible"
@@ -177,7 +186,7 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
             <motion.div
               className="absolute top-0 right-0 w-1/2 h-full z-10"
               style={{
-                backgroundColor: "#2E191E",
+                backgroundColor: "#9333ea",
               }}
               variants={rightCurtainVariants}
               initial="visible"
@@ -192,7 +201,7 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
               sessionUrl ? (
                 <iframe
                   src={sessionUrl}
-                  className="w-full h-full border-none"
+                  className="w-full h-full border-none absolute inset-0"
                   sandbox="allow-same-origin allow-scripts allow-forms"
                   allow="clipboard-read; clipboard-write"
                   loading="lazy"
@@ -201,113 +210,73 @@ const BrowserSessionContainer: React.FC<BrowserSessionContainerProps> = ({
                 />
               ) : (
                 <div
-                  className="w-full h-full flex flex-col items-center justify-center"
-                  style={{ backgroundColor: "rgba(245, 240, 255, 0.4)" }}
+                  className="w-full h-full flex flex-col items-center justify-center p-6 space-y-4"
                 >
-                  {/* Simple loading animation that will always show when session URL is not available */}
-                  <div className="flex flex-col items-center space-y-6 w-full animate-in fade-in slide-in-from-bottom-5 duration-500">
-                    <h2 className="text-2xl font-semibold text-white z-10 animate-in fade-in duration-700 delay-500">
-                      Starting CUA Browser
-                    </h2>
-                    <div className="flex flex-col items-center space-y-4 w-full animate-in fade-in duration-700 delay-500">
-                      <div className="mt-4 flex justify-center">
-                        <div className=" bg-gray-200 h-16 w-16 animate-pulse"></div>
-                      </div>
+                  <div className="animate-pulse">
+                    <div className="w-12 h-12 rounded-full bg-[#111111] border-2 border-[#ff00bf] flex items-center justify-center">
+                      <svg
+                        className="w-6 h-6 text-[#ff00bf]"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                        />
+                      </svg>
                     </div>
                   </div>
+                  <h3 className="text-xl font-semibold text-white">
+                    Starting New Session
+                  </h3>
+                  <p className="text-center text-gray-300 max-w-md">
+                    {initialMessage
+                      ? `Goal: ${initialMessage}`
+                      : "Initializing browser session..."}
+                  </p>
                 </div>
               )
-            ) : null}
-
-            {/* Completion Message with AnimatePresence for fade in/out */}
-            <AnimatePresence>
-              {isCompleted && (
-                <motion.div
-                  className="absolute inset-0 z-20 flex flex-col items-center justify-center p-3 md:p-8"
-                  style={{
-                    backdropFilter: "blur(3px)",
-                    backgroundColor: "rgba(46, 25, 30, 0.2)",
-                  }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <motion.div
-                    className="flex flex-col items-center space-y-3 md:space-y-6 w-full max-w-[95%] md:max-w-[80%] text-center bg-[rgba(46,25,30,0.7)] p-4 rounded-lg backdrop-blur-sm"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                  >
-                    <motion.span
-                      className="text-lg md:text-3xl font-semibold text-white"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.4 }}
-                    >
-                      Task completed
-                    </motion.span>
-                    <motion.span
-                      className="text-sm md:text-xl italic text-white break-words max-h-[150px] md:max-h-none overflow-y-auto px-2"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.6 }}
-                    >
-                      &quot;{initialMessage}&quot;
-                    </motion.span>
-
-                    <motion.a
-                      href="https://www.browserbase.com/sign-up"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-4 md:px-6 py-2 md:py-3 text-white text-base md:text-lg font-medium mt-4 md:mt-8 inline-block text-center"
-                      style={{
-                        background: "#F14A1C",
-                        backdropFilter: "blur(12px)",
-                        border: "1px solid rgba(255, 255, 255, 0.3)",
-                      }}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.8 }}
-                      whileHover={{
-                        scale: 0.95,
-                        background: "#F14A1C",
-                      }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      Want to try Browserbase?
-                    </motion.a>
-                    <motion.button
-                      type="button"
-                      onClick={onRestart}
-                      className="flex gap-x-2 text-white px-2 py-1 items-center"
-                    >
-                      <RotateCcwIcon className="size-4" />
-                      Restart
-                    </motion.button>
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-          {/* Timer below iframe on desktop - always reserve the space */}
-          <div className="h-[42px] mt-4 hidden md:block">
-            {!isCompleted && sessionUrl && (
-              <motion.div
-                className="w-full flex justify-center items-center space-x-1 text-sm text-[#2E191E]"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{
-                  delay: 1.5,
-                  duration: 0.5,
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 25,
-                }}
+            ) : (
+              <div
+                className="w-full h-full flex flex-col items-center justify-center p-6 space-y-4"
               >
-                <SessionControls sessionTime={sessionTime} onStop={onStop} />
-              </motion.div>
+                <div className="animate-pulse">
+                  <div className="w-12 h-12 rounded-full bg-[#ff00bf] flex items-center justify-center">
+                    <svg
+                      className="w-6 h-6 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <h3 className="text-xl font-semibold text-white">
+                  Session Complete
+                </h3>
+                <p className="text-center text-gray-300 max-w-md">
+                  The browser session has been completed. You can restart with a
+                  new goal or close this session.
+                </p>
+                <div className="flex gap-2 mt-4">
+                  <button
+                    onClick={onRestart}
+                    className="flex items-center px-4 py-2 bg-black text-[#ff00bf] border border-[#ff00bf] rounded-lg hover:bg-[#ff00bf] hover:text-white transition-colors"
+                  >
+                    <RotateCcwIcon size={16} className="mr-2" />
+                    New Session
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </motion.div>
